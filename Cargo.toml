@@ -2,7 +2,15 @@
 name = "sonic-channel"
 version = "0.1.0-rc1"
 authors = ["Dmitriy Pleshevskiy <dmitriy@ideascup.me>"]
+description = "Rust client for sonic search backend"
+categories = ["api-bindings"]
+keywords = ["sonic", "search", "client", "elasticsearch", "api"]
 edition = "2018"
+licence = "MPL-2.0"
+repository = "https://github.com/pleshevskiy/sonic-channel"
+homepage = "https://github.com/pleshevskiy/sonic-channel"
+documentation = "https://docs.rs/sonic-channel"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -16,3 +24,11 @@ default = ["search"]
 ingest = []
 search = []
 control = []
+
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+# https://docs.rs/about
+[package.metadata.docs.rs]
+all-features = true
