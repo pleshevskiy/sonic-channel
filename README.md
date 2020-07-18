@@ -24,80 +24,35 @@ sonic-channel = { version = "0.1" }
 
 ## Example usage
 
+### Search channel
+
 ```rust
-use std::itconfig;
-use std::env;
-//use dotenv::dotenv;
+use sonic_channel::*;
 
-config! {
-    DEBUG: bool => false,
-    
-    #[env_name = "APP_HOST"]
-    HOST: String => "127.0.0.1",
-    
-    DATABASE_URL < (
-        "postgres://",
-        POSTGRES_USERNAME => "user",
-        ":",
-        POSTGRES_PASSWORD => "pass",
-        "@",
-        POSTGRES_HOST => "localhost:5432",
-        "/",
-        POSTGRES_DB => "test",
-    ),
-    
-    APP {
-        static BASE_URL => "/api", // &'static str by default
-    
-        ARTICLE {
-            static PER_PAGE: u32 => 15,
-        }
-        
-        #[cfg(feature = "companies")]
-        COMPANY {
-            #[env_name = "INSTITUTIONS_PER_PAGE"]
-            static PER_PAGE: u32 => 15,
-        }
-    }
-    
-    FEATURE {
-        NEW_MENU: bool => false,
-    
-        COMPANY {
-            PROFILE: bool => false,
-        }
-    }
-}
+fn main() -> Result<(), SonicError> {
+    let mut channel = SonicChannel::connect("localhost:1491")?;
 
-fn main () {
-    // dotenv().expect("dotenv setup to be successful");
-    // or
-    env::set_var("FEATURE_NEW_MENU", "t");
-    
-    config::init();
-    assert_eq!(config::HOST(), String::from("127.0.0.1"));
-    assert_eq!(config::DATABASE_URL(), String::from("postgres://user:pass@localhost:5432/test"));
-    assert_eq!(config::APP:ARTICLE:PER_PAGE(), 15);
-    assert_eq!(config::FEATURE::NEW_MENU(), true);
+    channel.start(ChannelMode::Search, "SecretPassword")?;
+    let objects = channel.query("collection", "bucket", "recipe")?;
+    dbg!(objects);
+
+    Ok(())
 }
 ```
 
-
-Macro is an optional feature, disabled by default. You can use this library without macro
+### Ingest channel
 
 ```rust
-use itconfig::*;
-use std::env;
-// use dotenv::dotenv;
+use sonic_channel::*;
 
-fn main() {
-    // dotenv().expect("dotenv setup to be successful");
-    // or
-    env::set_var("DATABASE_URL", "postgres://127.0.0.1:5432/test");
+fn main() -> Result<(), SonicError> {
+    let mut channel = SonicChannel::connect("localhost:1491")?;
 
-    let database_url = get_env::<String>("DATABASE_URL").unwrap();
-    let new_profile: bool = get_env_or_default("FEATURE_NEW_PROFILE", false);
-    let articles_per_page: u32 = get_env_or_set_default("ARTICLES_PER_PAGE", 10);
+    channel.start(ChannelMode::Ingest, "SecretPassword")?;
+    let pushed = channel.push("collection", "bucket", "user:1", "my best recipe")?;
+    dbg!(pushed);
+
+    Ok(())
 }
 ```
 
