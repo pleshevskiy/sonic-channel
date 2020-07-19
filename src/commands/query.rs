@@ -1,5 +1,5 @@
 use super::StreamCommand;
-use crate::errors::SonicError;
+use crate::result::*;
 use regex::Regex;
 
 const RE_QUERY_RECEIVED_MESSAGE: &str = r"(?x)
@@ -36,7 +36,7 @@ impl StreamCommand for QueryCommand<'_> {
         message
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response, SonicError> {
+    fn receive(&self, message: String) -> Result<Self::Response> {
         lazy_static! {
             static ref RE: Regex = Regex::new(RE_QUERY_RECEIVED_MESSAGE).unwrap();
         }
@@ -44,14 +44,14 @@ impl StreamCommand for QueryCommand<'_> {
         dbg!(&message);
 
         match RE.captures(&message) {
-            None => Err(SonicError::QueryResponseError(
+            None => Err(Error::new(ErrorKind::QueryResponseError(
                 "Sonic response are wrong. Please write issue to github.",
-            )),
+            ))),
             Some(caps) => {
                 if &caps["pending_query_id"] != &caps["event_query_id"] {
-                    Err(SonicError::QueryResponseError(
+                    Err(Error::new(ErrorKind::QueryResponseError(
                         "Pending id and event id don't match",
-                    ))
+                    )))
                 } else if caps["objects"].is_empty() {
                     Ok(vec![])
                 } else {

@@ -1,6 +1,6 @@
 use super::StreamCommand;
 use crate::channel::ChannelMode;
-use crate::errors::SonicError;
+use crate::result::*;
 use regex::Regex;
 
 const RE_START_RECEIVED_MESSAGE: &str = r"(?x)
@@ -32,7 +32,7 @@ impl StreamCommand for StartCommand {
         format!("START {} {}\r\n", self.mode, self.password)
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response, SonicError> {
+    fn receive(&self, message: String) -> Result<Self::Response> {
         lazy_static! {
             static ref RE: Regex = Regex::new(RE_START_RECEIVED_MESSAGE).unwrap();
         }
@@ -40,22 +40,22 @@ impl StreamCommand for StartCommand {
         dbg!(&message);
 
         match RE.captures(&message) {
-            None => Err(SonicError::SwitchMode),
+            None => Err(Error::new(ErrorKind::SwitchMode)),
             Some(caps) => {
                 if self.mode.to_str() != &caps["mode"] {
-                    return Err(SonicError::SwitchMode);
+                    return Err(Error::new(ErrorKind::SwitchMode));
+                } else {
+                    let protocol_version: usize =
+                        caps["protocol"].parse().expect("Must be digit by regex");
+                    let max_buffer_size: usize =
+                        caps["buffer_size"].parse().expect("Must be digit by regex");
+
+                    Ok(StartCommandResponse {
+                        protocol_version,
+                        max_buffer_size,
+                        mode: self.mode,
+                    })
                 }
-
-                let protocol_version: usize =
-                    caps["protocol"].parse().expect("Must be digit by regex");
-                let max_buffer_size: usize =
-                    caps["buffer_size"].parse().expect("Must be digit by regex");
-
-                Ok(StartCommandResponse {
-                    protocol_version,
-                    max_buffer_size,
-                    mode: self.mode,
-                })
             }
         }
     }

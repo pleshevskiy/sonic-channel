@@ -18,7 +18,7 @@ version = "0.1.0"
 authors = ["Me <user@rust-lang.org>"]
 
 [dependencies]
-sonic-channel = { version = "0.1" }
+sonic-channel = { version = "0.1.0-rc3" }
 ```
 
 
@@ -29,7 +29,7 @@ sonic-channel = { version = "0.1" }
 ```rust
 use sonic_channel::*;
 
-fn main() -> Result<(), SonicError> {
+fn main() -> result::Result<()> {
     let mut channel = SonicChannel::connect("localhost:1491")?;
 
     channel.start(ChannelMode::Search, "SecretPassword")?;
@@ -45,7 +45,7 @@ fn main() -> Result<(), SonicError> {
 ```rust
 use sonic_channel::*;
 
-fn main() -> Result<(), SonicError> {
+fn main() -> result::Result<()> {
     let mut channel = SonicChannel::connect("localhost:1491")?;
 
     channel.start(ChannelMode::Ingest, "SecretPassword")?;

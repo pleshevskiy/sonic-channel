@@ -1,6 +1,8 @@
 mod quit;
 mod start;
+
 mod ping;
+
 #[cfg(feature = "ingest")]
 mod push;
 #[cfg(feature = "search")]
@@ -15,7 +17,7 @@ pub use push::PushCommand;
 #[cfg(feature = "search")]
 pub use query::QueryCommand;
 
-use crate::errors::SonicError;
+use crate::result::Result;
 
 pub trait StreamCommand {
     type Response;
@@ -24,5 +26,5 @@ pub trait StreamCommand {
 
     fn message(&self) -> String;
 
-    fn receive(&self, message: String) -> Result<Self::Response, SonicError>;
+    fn receive(&self, message: String) -> Result<Self::Response>;
 }

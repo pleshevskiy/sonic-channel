@@ -1,5 +1,5 @@
 use super::StreamCommand;
-use crate::errors::SonicError;
+use crate::result::Result;
 
 #[derive(Debug, Default)]
 pub struct PushCommand<'a> {
@@ -25,7 +25,7 @@ impl StreamCommand for PushCommand<'_> {
         message
     }
 
-    fn receive(&self, message: String) -> Result<<Self as StreamCommand>::Response, SonicError> {
+    fn receive(&self, message: String) -> Result<Self::Response> {
         dbg!(&message);
         Ok(message == "OK\r\n")
     }

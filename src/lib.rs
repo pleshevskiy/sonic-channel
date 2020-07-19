@@ -2,11 +2,10 @@
 
 mod channel;
 mod commands;
-mod errors;
+pub mod result;
 
 pub use channel::*;
 pub use commands::*;
-pub use errors::*;
 
 #[macro_use]
 extern crate lazy_static;

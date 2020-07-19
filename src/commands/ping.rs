@@ -1,5 +1,5 @@
 use super::StreamCommand;
-use crate::errors::SonicError;
+use crate::result::*;
 
 #[derive(Debug, Default)]
 pub struct PingCommand;
@@ -11,7 +11,7 @@ impl StreamCommand for PingCommand {
         String::from("PING\r\n")
     }
 
-    fn receive(&self, message: String) -> Result<<Self as StreamCommand>::Response, SonicError> {
+    fn receive(&self, message: String) -> Result<Self::Response> {
         dbg!(&message);
         Ok(message == "PONG\r\n")
     }

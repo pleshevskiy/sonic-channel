@@ -1,5 +1,5 @@
 use crate::commands::*;
-use crate::errors::SonicError;
+use crate::result::*;
 use std::fmt;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::net::{TcpStream, ToSocketAddrs};
@@ -26,9 +26,8 @@ macro_rules! init_commands {
         pub fn $fn_name $(<$($lt)+>)? (
             &self,
             $($arg_name: $arg_type),*
-        ) -> Result<
+        ) -> crate::result::Result<
             <$cmd_name as crate::commands::StreamCommand>::Response,
-            crate::errors::SonicError
         > {
             let command = $cmd_name { $($arg_name,)* ..Default::default() };
             self.run_command(command)
@@ -74,7 +73,7 @@ impl ChannelMode {
 }
 
 impl fmt::Display for ChannelMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         write!(f, "{}", self.to_str())
     }
 }
@@ -88,8 +87,8 @@ pub struct SonicChannel {
 }
 
 impl SonicChannel {
-    pub fn connect<A: ToSocketAddrs>(addr: A) -> Result<Self, SonicError> {
-        let stream = TcpStream::connect(addr).map_err(|_| SonicError::ConnectToServer)?;
+    pub fn connect<A: ToSocketAddrs>(addr: A) -> Result<Self> {
+        let stream = TcpStream::connect(addr).map_err(|_| Error::new(ErrorKind::ConnectToServer))?;
 
         let channel = SonicChannel {
             stream,
@@ -104,21 +103,21 @@ impl SonicChannel {
         if message.starts_with("CONNECTED") {
             Ok(channel)
         } else {
-            Err(SonicError::ConnectToServer)
+            Err(Error::new(ErrorKind::ConnectToServer))
         }
     }
 
-    fn write<SC: StreamCommand>(&self, command: &SC) -> Result<(), SonicError> {
+    fn write<SC: StreamCommand>(&self, command: &SC) -> Result<()> {
         let mut writer = BufWriter::with_capacity(self.max_buffer_size, &self.stream);
         let message = command.message();
         dbg!(&message);
         writer
             .write_all(message.as_bytes())
-            .map_err(|_| SonicError::WriteToStream)?;
+            .map_err(|_| Error::new(ErrorKind::WriteToStream))?;
         Ok(())
     }
 
-    fn read(&self, max_read_lines: usize) -> Result<String, SonicError> {
+    fn read(&self, max_read_lines: usize) -> Result<String> {
         let mut reader = BufReader::with_capacity(self.max_buffer_size, &self.stream);
         let mut message = String::new();
 
@@ -126,23 +125,23 @@ impl SonicChannel {
         while lines_read < max_read_lines {
             reader
                 .read_line(&mut message)
-                .map_err(|_| SonicError::ReadStream)?;
+                .map_err(|_| Error::new(ErrorKind::ReadStream))?;
             lines_read += 1;
         }
 
         Ok(message)
     }
 
-    pub fn run_command<SC: StreamCommand>(&self, command: SC) -> Result<SC::Response, SonicError> {
+    pub fn run_command<SC: StreamCommand>(&self, command: SC) -> Result<SC::Response> {
         self.write(&command)?;
         let message = self.read(SC::READ_LINES_COUNT)?;
         command.receive(message)
     }
 
     #[cfg(any(feature = "ingest", feature = "search", feature = "control"))]
-    pub fn start<S: ToString>(&mut self, mode: ChannelMode, password: S) -> Result<(), SonicError> {
+    pub fn start<S: ToString>(&mut self, mode: ChannelMode, password: S) -> Result<()> {
         if self.mode.is_some() {
-            return Err(SonicError::RunCommand);
+            return Err(Error::new(ErrorKind::RunCommand));
         }
 
         let command = StartCommand {
