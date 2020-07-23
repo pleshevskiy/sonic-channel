@@ -189,6 +189,17 @@ impl SonicChannel {
         use FlushCommand for fn flushc<'a>(
             collection: &'a str,
         );
+
+        use FlushCommand for fn flushb<'a>(
+            collection: &'a str,
+            bucket: &'a str => Some(bucket),
+        );
+
+        use FlushCommand for fn flusho<'a>(
+            collection: &'a str,
+            bucket: &'a str => Some(bucket),
+            object: &'a str => Some(object),
+        );
     }
 
     #[cfg(feature = "search")]
@@ -211,7 +222,7 @@ impl SonicChannel {
             bucket: &'a str,
             terms: &'a str,
             limit: usize => Some(limit),
-            offset: usize => Some(limit),
+            offset: usize => Some(offset),
         );
 
         use SuggestCommand for fn suggest<'a>(
