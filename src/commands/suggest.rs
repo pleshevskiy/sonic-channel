@@ -2,35 +2,31 @@ use super::StreamCommand;
 use crate::result::*;
 use regex::Regex;
 
-const RE_QUERY_RECEIVED_MESSAGE: &str = r"(?x)
-    ^PENDING\s(?P<pending_query_id>\w+)\r\n
-    EVENT\sQUERY\s(?P<event_query_id>\w+)\s(?P<objects>.*?)\r\n$
+const RE_SUGGEST_RECEIVED_MESSAGE: &str = r"(?x)
+    ^PENDING\s(?P<pending_suggest_id>\w+)\r\n
+    EVENT\sSUGGEST\s(?P<event_suggest_id>\w+)\s(?P<words>.*?)\r\n$
 ";
 
 #[derive(Debug, Default)]
-pub struct QueryCommand<'a> {
+pub struct SuggestCommand<'a> {
     pub collection: &'a str,
     pub bucket: &'a str,
-    pub terms: &'a str,
+    pub word: &'a str,
     pub limit: Option<usize>,
-    pub offset: Option<usize>,
 }
 
-impl StreamCommand for QueryCommand<'_> {
+impl StreamCommand for SuggestCommand<'_> {
     type Response = Vec<String>;
 
     const READ_LINES_COUNT: usize = 2;
 
     fn message(&self) -> String {
         let mut message = format!(
-            r#"QUERY {} {} "{}""#,
-            self.collection, self.bucket, self.terms
+            r#"SUGGEST {} {} "{}""#,
+            self.collection, self.bucket, self.word
         );
         if let Some(limit) = self.limit.as_ref() {
             message.push_str(&format!(" LIMIT({})", limit));
-        }
-        if let Some(offset) = self.offset.as_ref() {
-            message.push_str(&format!(" OFFSET({})", offset));
         }
         message.push_str("\r\n");
         message
@@ -38,7 +34,7 @@ impl StreamCommand for QueryCommand<'_> {
 
     fn receive(&self, message: String) -> Result<Self::Response> {
         lazy_static! {
-            static ref RE: Regex = Regex::new(RE_QUERY_RECEIVED_MESSAGE).unwrap();
+            static ref RE: Regex = Regex::new(RE_SUGGEST_RECEIVED_MESSAGE).unwrap();
         }
 
         dbg!(&message);
@@ -48,14 +44,14 @@ impl StreamCommand for QueryCommand<'_> {
                 "Sonic response are wrong. Please write issue to github.",
             ))),
             Some(caps) => {
-                if &caps["pending_query_id"] != &caps["event_query_id"] {
+                if &caps["pending_suggest_id"] != &caps["event_suggest_id"] {
                     Err(Error::new(ErrorKind::QueryResponseError(
                         "Pending id and event id don't match",
                     )))
-                } else if caps["objects"].is_empty() {
+                } else if caps["words"].is_empty() {
                     Ok(vec![])
                 } else {
-                    Ok(caps["objects"].split(" ").map(str::to_owned).collect())
+                    Ok(caps["words"].split(" ").map(str::to_owned).collect())
                 }
             }
         }

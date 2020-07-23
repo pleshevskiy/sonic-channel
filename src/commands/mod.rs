@@ -7,6 +7,8 @@ mod ping;
 mod push;
 #[cfg(feature = "search")]
 mod query;
+#[cfg(feature = "search")]
+mod suggest;
 
 pub use quit::QuitCommand;
 pub use start::StartCommand;
@@ -16,6 +18,8 @@ pub use ping::PingCommand;
 pub use push::PushCommand;
 #[cfg(feature = "search")]
 pub use query::QueryCommand;
+#[cfg(feature = "search")]
+pub use suggest::SuggestCommand;
 
 use crate::result::Result;
 

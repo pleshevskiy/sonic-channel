@@ -204,6 +204,19 @@ impl SonicChannel {
             limit: Option<usize>,
             offset: Option<usize>,
         );
+
+        use SuggestCommand for fn suggest<'a>(
+            collection: &'a str,
+            bucket: &'a str,
+            word: &'a str,
+        );
+
+        use SuggestCommand for fn suggest_with_limit<'a>(
+            collection: &'a str,
+            bucket: &'a str,
+            word: &'a str,
+            limit: Option<usize>,
+        );
     }
 
     #[cfg(feature = "control")]
