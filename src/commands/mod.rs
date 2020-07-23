@@ -4,7 +4,10 @@ mod start;
 mod ping;
 
 #[cfg(feature = "ingest")]
+mod flush;
+#[cfg(feature = "ingest")]
 mod push;
+
 #[cfg(feature = "search")]
 mod query;
 #[cfg(feature = "search")]
@@ -14,8 +17,12 @@ pub use quit::QuitCommand;
 pub use start::StartCommand;
 
 pub use ping::PingCommand;
+
+#[cfg(feature = "ingest")]
+pub use flush::FlushCommand;
 #[cfg(feature = "ingest")]
 pub use push::PushCommand;
+
 #[cfg(feature = "search")]
 pub use query::QueryCommand;
 #[cfg(feature = "search")]

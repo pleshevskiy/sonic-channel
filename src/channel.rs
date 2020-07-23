@@ -180,6 +180,10 @@ impl SonicChannel {
             text: &'a str,
             locale: Option<&'a str>,
         );
+
+        use FlushCommand for fn flushc<'a>(
+            collection: &'a str,
+        );
     }
 
     #[cfg(feature = "search")]
