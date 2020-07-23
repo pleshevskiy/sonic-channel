@@ -7,18 +7,18 @@ We recommend you start with the [documentation].
 
 ## Installation
 
-Add `sonic-channel = { version = "0.1" }` as a dependency in `Cargo.toml`.
+Add `sonic-channel = { version = "0.2" }` as a dependency in `Cargo.toml`.
 
 `Cargo.toml` example:
 
 ```toml
 [package]
 name = "my-crate"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Me <user@rust-lang.org>"]
 
 [dependencies]
-sonic-channel = { version = "0.1" }
+sonic-channel = { version = "0.2" }
 ```
 
 
