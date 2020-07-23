@@ -14,22 +14,27 @@ macro_rules! init_commands {
         $(
             use $cmd_name:ident
             for fn $fn_name:ident
-            $(<$($lt:lifetime)+>)?
-            ($($args:tt)*)
-            ;
+            $(<$($lt:lifetime)+>)? (
+                $($args:tt)*
+            );
         )*
     ) => {
         $(init_commands!(use $cmd_name for fn $fn_name $(<$($lt)+>)? ($($args)*));)*
     };
 
-    (use $cmd_name:ident for fn $fn_name:ident $(<$($lt:lifetime)+>)? ($($arg_name:ident : $arg_type:ty,)*)) => {
+    (
+        use $cmd_name:ident 
+        for fn $fn_name:ident $(<$($lt:lifetime)+>)? (
+            $($arg_name:ident : $arg_type:ty $( => $arg_value:expr)?,)*
+        )
+    ) => {
         pub fn $fn_name $(<$($lt)+>)? (
             &self,
             $($arg_name: $arg_type),*
         ) -> crate::result::Result<
             <$cmd_name as crate::commands::StreamCommand>::Response,
         > {
-            let command = $cmd_name { $($arg_name,)* ..Default::default() };
+            let command = $cmd_name { $($arg_name $(: $arg_value)?,)* ..Default::default() };
             self.run_command(command)
         }
     };
@@ -178,7 +183,7 @@ impl SonicChannel {
             bucket: &'a str,
             object: &'a str,
             text: &'a str,
-            locale: Option<&'a str>,
+            locale: &'a str => Some(locale),
         );
 
         use FlushCommand for fn flushc<'a>(
@@ -198,15 +203,15 @@ impl SonicChannel {
             collection: &'a str,
             bucket: &'a str,
             terms: &'a str,
-            limit: Option<usize>,
+            limit: usize => Some(limit),
         );
 
         use QueryCommand for fn query_with_limit_and_offset<'a>(
             collection: &'a str,
             bucket: &'a str,
             terms: &'a str,
-            limit: Option<usize>,
-            offset: Option<usize>,
+            limit: usize => Some(limit),
+            offset: usize => Some(limit),
         );
 
         use SuggestCommand for fn suggest<'a>(
@@ -219,7 +224,7 @@ impl SonicChannel {
             collection: &'a str,
             bucket: &'a str,
             word: &'a str,
-            limit: Option<usize>,
+            limit: usize => Some(limit),
         );
     }
 
