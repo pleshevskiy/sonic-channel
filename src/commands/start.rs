@@ -19,6 +19,7 @@ pub struct StartCommand {
     pub password: String,
 }
 
+#[derive(Debug)]
 pub struct StartCommandResponse {
     pub protocol_version: usize,
     pub max_buffer_size: usize,

@@ -49,7 +49,6 @@ pub enum ChannelMode {
 
 impl ChannelMode {
     pub fn to_str(&self) -> &str {
-        #[cfg(any(feature = "ingest", feature = "search", feature = "control"))]
         match self {
             #[cfg(feature = "search")]
             ChannelMode::Search => "search",
@@ -60,15 +59,6 @@ impl ChannelMode {
             #[cfg(feature = "control")]
             ChannelMode::Control => "control",
         }
-
-        // Actually we'll not see this text because we cannot call this function for enum
-        // without enum value, but Rust compiler want this case.
-        #[cfg(all(
-            not(feature = "ingest"),
-            not(feature = "search"),
-            not(feature = "control")
-        ))]
-        "unitialized"
     }
 }
 
@@ -87,26 +77,6 @@ pub struct SonicChannel {
 }
 
 impl SonicChannel {
-    pub fn connect<A: ToSocketAddrs>(addr: A) -> Result<Self> {
-        let stream = TcpStream::connect(addr).map_err(|_| Error::new(ErrorKind::ConnectToServer))?;
-
-        let channel = SonicChannel {
-            stream,
-            mode: None,
-            max_buffer_size: UNINITIALIZED_MODE_MAX_BUFFER_SIZE,
-            protocol_version: DEFAULT_SONIC_PROTOCOL_VERSION,
-        };
-
-        let message = channel.read(1)?;
-        dbg!(&message);
-        // TODO: need to add support for versions
-        if message.starts_with("CONNECTED") {
-            Ok(channel)
-        } else {
-            Err(Error::new(ErrorKind::ConnectToServer))
-        }
-    }
-
     fn write<SC: StreamCommand>(&self, command: &SC) -> Result<()> {
         let mut writer = BufWriter::with_capacity(self.max_buffer_size, &self.stream);
         let message = command.message();
@@ -138,8 +108,28 @@ impl SonicChannel {
         command.receive(message)
     }
 
-    #[cfg(any(feature = "ingest", feature = "search", feature = "control"))]
-    pub fn start<S: ToString>(&mut self, mode: ChannelMode, password: S) -> Result<()> {
+    fn connect<A: ToSocketAddrs>(addr: A) -> Result<Self> {
+        let stream =
+            TcpStream::connect(addr).map_err(|_| Error::new(ErrorKind::ConnectToServer))?;
+
+        let channel = SonicChannel {
+            stream,
+            mode: None,
+            max_buffer_size: UNINITIALIZED_MODE_MAX_BUFFER_SIZE,
+            protocol_version: DEFAULT_SONIC_PROTOCOL_VERSION,
+        };
+
+        let message = channel.read(1)?;
+        dbg!(&message);
+        // TODO: need to add support for versions
+        if message.starts_with("CONNECTED") {
+            Ok(channel)
+        } else {
+            Err(Error::new(ErrorKind::ConnectToServer))
+        }
+    }
+
+    fn start<S: ToString>(&mut self, mode: ChannelMode, password: S) -> Result<()> {
         if self.mode.is_some() {
             return Err(Error::new(ErrorKind::RunCommand));
         }
@@ -157,12 +147,20 @@ impl SonicChannel {
         Ok(())
     }
 
-    init_commands! {
-        use QuitCommand for fn quit();
+    // I think we shouldn't separate commands connect and start because we haven't 
+    // possibility to change channel in sonic server, if we already chosen one of them. 🤔
+    pub fn connect_with_start<A, S>(mode: ChannelMode, addr: A, password: S) -> Result<Self>
+    where
+        A: ToSocketAddrs,
+        S: ToString,
+    {
+        let mut channel = Self::connect(addr)?;
+        channel.start(mode, password)?;
+        Ok(channel)
     }
 
-    #[cfg(any(feature = "ingest", feature = "search", feature = "control"))]
     init_commands! {
+        use QuitCommand for fn quit();
         use PingCommand for fn ping();
     }
 

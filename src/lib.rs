@@ -1,5 +1,8 @@
 #![allow(dead_code)]
 
+#[cfg(not(any(feature = "ingest", feature = "search", feature = "control")))]
+compile_error!(r#"Either features "ingest" or "search" or "control" must be enabled for "sonic-channel" crate"#);
+
 mod channel;
 mod commands;
 pub mod result;

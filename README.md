@@ -18,7 +18,7 @@ version = "0.1.0"
 authors = ["Me <user@rust-lang.org>"]
 
 [dependencies]
-sonic-channel = { version = "0.1.0-rc3" }
+sonic-channel = { version = "0.1" }
 ```
 
 
@@ -30,9 +30,12 @@ sonic-channel = { version = "0.1.0-rc3" }
 use sonic_channel::*;
 
 fn main() -> result::Result<()> {
-    let mut channel = SonicChannel::connect("localhost:1491")?;
+    let channel = SonicChannel::connect_with_start(
+        "localhost:1491",
+        ChannelMode::Search,
+        "SecretPassword",
+    )?;
 
-    channel.start(ChannelMode::Search, "SecretPassword")?;
     let objects = channel.query("collection", "bucket", "recipe")?;
     dbg!(objects);
 
@@ -46,10 +49,15 @@ fn main() -> result::Result<()> {
 use sonic_channel::*;
 
 fn main() -> result::Result<()> {
-    let mut channel = SonicChannel::connect("localhost:1491")?;
+    let mut channel = SonicChannel::connect_with_start(
+        "localhost:1491",
+        ChannelMode::Ingest, 
+        "SecretPassword",
+    )?;
 
-    channel.start(ChannelMode::Ingest, "SecretPassword")?;
     let pushed = channel.push("collection", "bucket", "user:1", "my best recipe")?;
+    // or
+    // let pushed = channel.push_with_locale("collection", "bucket", "user:1", "Мой лучший рецепт", Some("rus"))?;
     dbg!(pushed);
 
     Ok(())
