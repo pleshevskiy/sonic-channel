@@ -74,3 +74,4 @@ fn main() -> result::Result<()> {
 
 
 [sonic]: https://github.com/valeriansaliou/sonic
+[documentation]: https://docs.rs/sonic-channel
