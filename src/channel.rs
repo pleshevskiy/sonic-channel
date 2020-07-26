@@ -12,6 +12,7 @@ const BUFFER_LINE_SEPARATOR: u8 = '\n' as u8;
 macro_rules! init_commands {
     (
         $(
+            $(#[$outer:meta])*
             use $cmd_name:ident
             for fn $fn_name:ident
             $(<$($lt:lifetime)+>)? (
@@ -19,15 +20,25 @@ macro_rules! init_commands {
             );
         )*
     ) => {
-        $(init_commands!(use $cmd_name for fn $fn_name $(<$($lt)+>)? ($($args)*));)*
+        $(
+            init_commands!(
+                $(#[$outer])*
+                use $cmd_name
+                for fn $fn_name $(<$($lt)+>)? (
+                    $($args)*
+                )
+            );
+        )*
     };
 
     (
-        use $cmd_name:ident 
+        $(#[$outer:meta])*
+        use $cmd_name:ident
         for fn $fn_name:ident $(<$($lt:lifetime)+>)? (
             $($arg_name:ident : $arg_type:ty $( => $arg_value:expr)?,)*
         )
     ) => {
+        $(#[$outer])*
         pub fn $fn_name $(<$($lt)+>)? (
             &self,
             $($arg_name: $arg_type),*
@@ -40,19 +51,24 @@ macro_rules! init_commands {
     };
 }
 
+/// Channel modes supported by sonic search backend.
 #[derive(Debug, Clone, Copy)]
 pub enum ChannelMode {
+    /// Search mode
     #[cfg(feature = "search")]
     Search,
 
+    /// Ingest mode
     #[cfg(feature = "ingest")]
     Ingest,
 
+    /// Control mode
     #[cfg(feature = "control")]
     Control,
 }
 
 impl ChannelMode {
+    /// Converts enum to &str
     pub fn to_str(&self) -> &str {
         match self {
             #[cfg(feature = "search")]
@@ -73,6 +89,10 @@ impl fmt::Display for ChannelMode {
     }
 }
 
+/// Root and Heart of this library.
+///
+/// You can connect to the sonic search backend and run all supported protocol methods.
+///
 #[derive(Debug)]
 pub struct SonicChannel {
     stream: TcpStream,
@@ -152,8 +172,16 @@ impl SonicChannel {
         Ok(())
     }
 
-    // I think we shouldn't separate commands connect and start because we haven't 
-    // possibility to change channel in sonic server, if we already chosen one of them. 🤔
+    /// Connect to the search backend in chosen mode.
+    ///
+    /// I think we shouldn't separate commands connect and start because we haven't
+    /// possibility to change channel in sonic server, if we already chosen one of them. 🤔
+    ///
+    /// ```rust
+    /// use sonic_channel::*;
+    /// 
+    /// SonicChannel::connect_with_start(ChannelMode::Search, "localhost:1491", "SecretPassword");
+    /// ```
     pub fn connect_with_start<A, S>(mode: ChannelMode, addr: A, password: S) -> Result<Self>
     where
         A: ToSocketAddrs,
@@ -164,13 +192,18 @@ impl SonicChannel {
         Ok(channel)
     }
 
+    // TODO: add examples for commands.
     init_commands! {
+        #[doc="Stop connection."]
         use QuitCommand for fn quit();
+
+        #[doc="Ping server."]
         use PingCommand for fn ping();
     }
 
     #[cfg(feature = "ingest")]
     init_commands! {
+        #[doc="Push search data in the index."]
         use PushCommand for fn push<'a>(
             collection: &'a str,
             bucket: &'a str,
@@ -178,6 +211,7 @@ impl SonicChannel {
             text: &'a str,
         );
 
+        #[doc="Push search data in the index with locale parameter in ISO 639-3 code."]
         use PushCommand for fn push_with_locale<'a>(
             collection: &'a str,
             bucket: &'a str,
@@ -186,15 +220,18 @@ impl SonicChannel {
             locale: &'a str => Some(locale),
         );
 
+        #[doc="Flush all indexed data from collections."]
         use FlushCommand for fn flushc<'a>(
             collection: &'a str,
         );
 
+        #[doc="Flush all indexed data from bucket in a collection."]
         use FlushCommand for fn flushb<'a>(
             collection: &'a str,
             bucket: &'a str => Some(bucket),
         );
 
+        #[doc="Flush all indexed data from an object in a bucket in collection."]
         use FlushCommand for fn flusho<'a>(
             collection: &'a str,
             bucket: &'a str => Some(bucket),
@@ -204,12 +241,14 @@ impl SonicChannel {
 
     #[cfg(feature = "search")]
     init_commands! {
+        #[doc="Query objects in database."]
         use QueryCommand for fn query<'a>(
             collection: &'a str,
             bucket: &'a str,
             terms: &'a str,
         );
 
+        #[doc="Query limited objects in database."]
         use QueryCommand for fn query_with_limit<'a>(
             collection: &'a str,
             bucket: &'a str,
@@ -217,6 +256,7 @@ impl SonicChannel {
             limit: usize => Some(limit),
         );
 
+        #[doc="Query limited objects with offset in database."]
         use QueryCommand for fn query_with_limit_and_offset<'a>(
             collection: &'a str,
             bucket: &'a str,
@@ -225,12 +265,14 @@ impl SonicChannel {
             offset: usize => Some(offset),
         );
 
+        #[doc="Suggest auto-completes words."]
         use SuggestCommand for fn suggest<'a>(
             collection: &'a str,
             bucket: &'a str,
             word: &'a str,
         );
 
+        #[doc="Suggest auto-completes words with limit."]
         use SuggestCommand for fn suggest_with_limit<'a>(
             collection: &'a str,
             bucket: &'a str,

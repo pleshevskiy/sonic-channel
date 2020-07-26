@@ -1,8 +1,12 @@
 use std::error::Error as StdError;
 use std::fmt;
 
+/// Sugar if you expect only sonic-channel error type in result
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// Wrap for sonic channel error kind. This type has std::error::Error 
+/// implementation and you can use boxed trait for catch other errors
+/// like this.
 #[derive(Debug)]
 pub struct Error {
     kind: ErrorKind,
@@ -11,18 +15,37 @@ pub struct Error {
 impl StdError for Error {}
 
 impl Error {
+    /// Creates new Error with sonic channel error kind
+    /// 
+    /// ```rust
+    /// use sonic_channel::result::*;
+    /// 
+    /// let err = Error::new(ErrorKind::ConnectToServer);
+    /// ```
     pub fn new(kind: ErrorKind) -> Self {
         Error { kind }
     }
 }
 
+/// All error kinds that you can see in sonic-channel crate.
 #[derive(Debug)]
 pub enum ErrorKind {
+    /// Cannot connect to the sonic search backend.
     ConnectToServer,
+
+    /// Cannot write message to stream.
     WriteToStream,
+
+    /// Cannot read message in stream.
     ReadStream,
+
+    /// Cannot switch channel mode from uninitialized.
     SwitchMode,
+
+    /// Cannot run command in current mode.
     RunCommand,
+
+    /// Error in query response with additional message.
     QueryResponseError(&'static str),
 }
 

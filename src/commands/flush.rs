@@ -3,6 +3,7 @@ use crate::result::{Error, ErrorKind, Result};
 use regex::Regex;
 
 const RE_QUERY_RECEIVED_MESSAGE: &str = r"^RESULT (?P<flush_count>\d+)\r\n$";
+
 #[derive(Debug, Default)]
 pub struct FlushCommand<'a> {
     pub collection: &'a str,

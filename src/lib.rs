@@ -62,6 +62,8 @@ compile_error!(r#"Either features "ingest" or "search" or "control" must be enab
 
 mod channel;
 mod commands;
+
+/// Contains sonic channel error type and custom Result type for easy configure your functions.
 pub mod result;
 
 pub use channel::*;
