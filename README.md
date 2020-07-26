@@ -31,8 +31,8 @@ use sonic_channel::*;
 
 fn main() -> result::Result<()> {
     let channel = SonicChannel::connect_with_start(
-        "localhost:1491",
         ChannelMode::Search,
+        "localhost:1491",
         "SecretPassword",
     )?;
 
@@ -50,14 +50,14 @@ use sonic_channel::*;
 
 fn main() -> result::Result<()> {
     let mut channel = SonicChannel::connect_with_start(
+        ChannelMode::Ingest,
         "localhost:1491",
-        ChannelMode::Ingest, 
         "SecretPassword",
     )?;
 
-    let pushed = channel.push("collection", "bucket", "user:1", "my best recipe")?;
+    let pushed = channel.push("collection", "bucket", "object:1", "my best recipe")?;
     // or
-    // let pushed = channel.push_with_locale("collection", "bucket", "user:1", "Мой лучший рецепт", Some("rus"))?;
+    // let pushed = channel.push_with_locale("collection", "bucket", "object:1", "Мой лучший рецепт", "rus")?;
     dbg!(pushed);
 
     Ok(())
@@ -74,4 +74,3 @@ fn main() -> result::Result<()> {
 
 
 [sonic]: https://github.com/valeriansaliou/sonic
-[documentation]: https://docs.rs/sonic-channel
