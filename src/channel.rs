@@ -31,8 +31,8 @@ macro_rules! init_commands {
         pub fn $fn_name $(<$($lt)+>)? (
             &self,
             $($arg_name: $arg_type),*
-        ) -> crate::result::Result<
-            <$cmd_name as crate::commands::StreamCommand>::Response,
+        ) -> $crate::result::Result<
+            <$cmd_name as $crate::commands::StreamCommand>::Response,
         > {
             let command = $cmd_name { $($arg_name $(: $arg_value)?,)* ..Default::default() };
             self.run_command(command)
@@ -107,7 +107,7 @@ impl SonicChannel {
         Ok(message)
     }
 
-    pub fn run_command<SC: StreamCommand>(&self, command: SC) -> Result<SC::Response> {
+    fn run_command<SC: StreamCommand>(&self, command: SC) -> Result<SC::Response> {
         self.write(&command)?;
         let message = self.read(SC::READ_LINES_COUNT)?;
         command.receive(message)
