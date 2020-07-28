@@ -6,6 +6,8 @@ mod ping;
 #[cfg(feature = "ingest")]
 mod flush;
 #[cfg(feature = "ingest")]
+mod pop;
+#[cfg(feature = "ingest")]
 mod push;
 
 #[cfg(feature = "search")]
@@ -22,6 +24,8 @@ pub use ping::PingCommand;
 pub use flush::FlushCommand;
 #[cfg(feature = "ingest")]
 pub use push::PushCommand;
+#[cfg(feature = "ingest")]
+pub use pop::PopCommand;
 
 #[cfg(feature = "search")]
 pub use query::QueryCommand;

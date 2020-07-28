@@ -220,6 +220,21 @@ impl SonicChannel {
             locale: &'a str => Some(locale),
         );
 
+        #[doc=r#"
+        Pop search data from the index. Returns removed words count as u32 type.
+
+        ```rust
+        let result = ingest_channel.pop("search", "default", "recipe:295", "cake")?;
+        dbg!(result);
+        ```
+        "#]
+        use PopCommand for fn pop<'a>(
+            collection: &'a str,
+            bucket: &'a str,
+            object: &'a str,
+            text: &'a str,
+        );
+
         #[doc="Flush all indexed data from collections."]
         use FlushCommand for fn flushc<'a>(
             collection: &'a str,
