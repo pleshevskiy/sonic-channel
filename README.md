@@ -26,6 +26,8 @@ sonic-channel = { version = "0.2" }
 
 ### Search channel
 
+Note: This example requires enabling the `search` feature, enabled by default.
+
 ```rust
 use sonic_channel::*;
 
@@ -44,6 +46,8 @@ fn main() -> result::Result<()> {
 ```
 
 ### Ingest channel
+
+Note: This example requires enabling the `ingest` feature.
 
 ```rust
 use sonic_channel::*;

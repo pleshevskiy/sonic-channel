@@ -5,6 +5,8 @@
 //! ## Example usage
 //! 
 //! ### Search channel
+//!
+//! Note: This example requires enabling the `search` feature, enabled by default.
 //! 
 //! ```rust
 //! use sonic_channel::*;
@@ -25,6 +27,8 @@
 //! 
 //! ### Ingest channel
 //! 
+//! Note: This example requires enabling the `ingest` feature.
+//!
 //! ```rust
 //! use sonic_channel::*;
 //! 

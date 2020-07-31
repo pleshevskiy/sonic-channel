@@ -7,7 +7,6 @@ use std::net::{TcpStream, ToSocketAddrs};
 const DEFAULT_SONIC_PROTOCOL_VERSION: usize = 1;
 const MAX_LINE_BUFFER_SIZE: usize = 20000;
 const UNINITIALIZED_MODE_MAX_BUFFER_SIZE: usize = 200;
-const BUFFER_LINE_SEPARATOR: u8 = '\n' as u8;
 
 macro_rules! init_commands {
     (
@@ -54,15 +53,28 @@ macro_rules! init_commands {
 /// Channel modes supported by sonic search backend.
 #[derive(Debug, Clone, Copy)]
 pub enum ChannelMode {
-    /// Search mode
+    /// Sonic server search channel mode.
+    /// 
+    /// In this mode you can use `query`, `suggest`, `ping` and `quit` commands.
+    /// 
+    /// Note: This mode requires enabling the `search` feature.
     #[cfg(feature = "search")]
     Search,
 
-    /// Ingest mode
+    /// Sonic server ingest channel mode.
+    /// 
+    /// In this mode you can use `push`, `pop`, `flushc`, `flushb`, `flusho`, 
+    /// `ping` and `quit` commands.
+    /// 
+    /// Note: This mode requires enabling the `ingest` feature.
     #[cfg(feature = "ingest")]
     Ingest,
 
-    /// Control mode
+    /// Sonic server control channel mode.
+    /// 
+    /// In this mode you can use `ping` and `quit` commands.
+    /// 
+    /// Note: This mode requires enabling the `control` feature.
     #[cfg(feature = "control")]
     Control,
 }
