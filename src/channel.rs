@@ -215,12 +215,41 @@ impl SonicChannel {
         Ok(channel)
     }
 
-    // TODO: add examples for commands.
     init_commands! {
-        #[doc="Stop connection."]
+        #[doc=r#"
+        Stop connection.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let channel = SonicChannel::connect_with_start(
+            ChannelMode::Search, 
+            "localhost:1491", 
+            "SecretPassword"
+        )?;
+
+        channel.quit()?;
+        # Ok(())
+        # }
+        "#]
         use QuitCommand for fn quit();
 
-        #[doc="Ping server."]
+        #[doc=r#"
+        Ping server.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let channel = SonicChannel::connect_with_start(
+            ChannelMode::Search, 
+            "localhost:1491", 
+            "SecretPassword"
+        )?;
+
+        channel.ping()?;
+        # Ok(())
+        # }
+        "#]
         use PingCommand for fn ping();
     }
 
