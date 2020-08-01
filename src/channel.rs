@@ -223,9 +223,9 @@ impl SonicChannel {
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
         let channel = SonicChannel::connect_with_start(
-            ChannelMode::Search, 
-            "localhost:1491", 
-            "SecretPassword"
+            ChannelMode::Search,
+            "localhost:1491",
+            "SecretPassword",
         )?;
 
         channel.quit()?;
@@ -241,9 +241,9 @@ impl SonicChannel {
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
         let channel = SonicChannel::connect_with_start(
-            ChannelMode::Search, 
-            "localhost:1491", 
-            "SecretPassword"
+            ChannelMode::Search,
+            "localhost:1491",
+            "SecretPassword",
         )?;
 
         channel.ping()?;
@@ -265,16 +265,16 @@ impl SonicChannel {
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
         let ingest_channel = SonicChannel::connect_with_start(
-            ChannelMode::Ingest, 
-            "localhost:1491", 
-            "SecretPassword"
+            ChannelMode::Ingest,
+            "localhost:1491",
+            "SecretPassword",
         )?;
 
         let result = ingest_channel.push(
-            "search", 
-            "default", 
-            "recipe:295", 
-            "Sweet Teriyaki Beef Skewers"
+            "search",
+            "default",
+            "recipe:295",
+            "Sweet Teriyaki Beef Skewers",
         )?;
         assert_eq!(result, true);
         # Ok(())
@@ -298,24 +298,23 @@ impl SonicChannel {
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
         let ingest_channel = SonicChannel::connect_with_start(
-            ChannelMode::Ingest, 
-            "localhost:1491", 
-            "SecretPassword"
+            ChannelMode::Ingest,
+            "localhost:1491",
+            "SecretPassword",
         )?;
 
         let result = ingest_channel.push_with_locale(
-            "search", 
-            "default", 
-            "recipe:296", 
-            "Гренки с жареным картофелем и сыром", 
-            "rus"
+            "search",
+            "default",
+            "recipe:296",
+            "Гренки с жареным картофелем и сыром",
+            "rus",
         )?;
         assert_eq!(result, true);
         # Ok(())
         # }
         ```
         "#]
-        #[doc=""]
         use PushCommand for fn push_with_locale<'a>(
             collection: &'a str,
             bucket: &'a str,
@@ -334,9 +333,9 @@ impl SonicChannel {
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
         let ingest_channel = SonicChannel::connect_with_start(
-            ChannelMode::Ingest, 
-            "localhost:1491", 
-            "SecretPassword"
+            ChannelMode::Ingest,
+            "localhost:1491",
+            "SecretPassword",
         )?;
 
         let result = ingest_channel.pop("search", "default", "recipe:295", "beef")?;
@@ -362,9 +361,9 @@ impl SonicChannel {
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
         let ingest_channel = SonicChannel::connect_with_start(
-            ChannelMode::Ingest, 
-            "localhost:1491", 
-            "SecretPassword"
+            ChannelMode::Ingest,
+            "localhost:1491",
+            "SecretPassword",
         )?;
 
         let flushc_count = ingest_channel.flushc("search")?;
@@ -387,9 +386,9 @@ impl SonicChannel {
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
         let ingest_channel = SonicChannel::connect_with_start(
-            ChannelMode::Ingest, 
-            "localhost:1491", 
-            "SecretPassword"
+            ChannelMode::Ingest,
+            "localhost:1491",
+            "SecretPassword",
         )?;
 
         let flushb_count = ingest_channel.flushb("search", "default")?;
@@ -413,9 +412,9 @@ impl SonicChannel {
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
         let ingest_channel = SonicChannel::connect_with_start(
-            ChannelMode::Ingest, 
-            "localhost:1491", 
-            "SecretPassword"
+            ChannelMode::Ingest,
+            "localhost:1491",
+            "SecretPassword",
         )?;
 
         let flusho_count = ingest_channel.flusho("search", "default", "recipe:296")?;
@@ -433,14 +432,60 @@ impl SonicChannel {
 
     #[cfg(feature = "search")]
     init_commands! {
-        #[doc="Query objects in database."]
+        #[doc=r#"
+        Query objects in database.
+
+        Note: This method requires enabling the `search` feature and start 
+        connection in Search mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Search,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let result = ingest_channel.query("search", "default", "Beef")?;
+        dbg!(result);
+        # Ok(())
+        # }
+        ```
+        "#]
         use QueryCommand for fn query<'a>(
             collection: &'a str,
             bucket: &'a str,
             terms: &'a str,
         );
 
-        #[doc="Query limited objects in database."]
+        #[doc=r#"
+        Query limited objects in database. This method similar query but
+        you can configure limit of result.
+
+        Note: This method requires enabling the `search` feature and start 
+        connection in Search mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Search,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let result = ingest_channel.query_with_limit(
+            "search",
+            "default",
+            "Beef",
+            10,
+        )?;
+        dbg!(result);
+        # Ok(())
+        # }
+        ```
+        "#]
         use QueryCommand for fn query_with_limit<'a>(
             collection: &'a str,
             bucket: &'a str,
@@ -448,7 +493,34 @@ impl SonicChannel {
             limit: usize => Some(limit),
         );
 
-        #[doc="Query limited objects with offset in database."]
+        #[doc=r#"
+        Query limited objects in database. This method similar 
+        query_with_limit but you can put offset in your query.
+
+        Note: This method requires enabling the `search` feature and start 
+        connection in Search mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Search,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let result = ingest_channel.query_with_limit_and_offset(
+            "search",
+            "default",
+            "Beef",
+            10,
+            10,
+        )?;
+        dbg!(result);
+        # Ok(())
+        # }
+        ```
+        "#]
         use QueryCommand for fn query_with_limit_and_offset<'a>(
             collection: &'a str,
             bucket: &'a str,
@@ -457,14 +529,55 @@ impl SonicChannel {
             offset: usize => Some(offset),
         );
 
-        #[doc="Suggest auto-completes words."]
+        #[doc=r#"
+        Suggest auto-completes words.
+
+        Note: This method requires enabling the `search` feature and start 
+        connection in Search mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Search,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let result = ingest_channel.suggest("search", "default", "Beef")?;
+        dbg!(result);
+        # Ok(())
+        # }
+        ```
+        "#]
         use SuggestCommand for fn suggest<'a>(
             collection: &'a str,
             bucket: &'a str,
             word: &'a str,
         );
 
-        #[doc="Suggest auto-completes words with limit."]
+        
+        #[doc=r#"
+        Suggest auto-completes words with limit.
+
+        Note: This method requires enabling the `search` feature and start 
+        connection in Search mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Search,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let result = ingest_channel.suggest("search", "default", "Beef", 5)?;
+        dbg!(result);
+        # Ok(())
+        # }
+        ```
+        "#]
         use SuggestCommand for fn suggest_with_limit<'a>(
             collection: &'a str,
             bucket: &'a str,
