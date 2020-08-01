@@ -15,22 +15,22 @@ mod query;
 #[cfg(feature = "search")]
 mod suggest;
 
-pub use quit::QuitCommand;
-pub use start::StartCommand;
+pub(crate) use quit::QuitCommand;
+pub(crate) use start::StartCommand;
 
-pub use ping::PingCommand;
+pub(crate) use ping::PingCommand;
 
 #[cfg(feature = "ingest")]
-pub use flush::FlushCommand;
+pub(crate) use flush::FlushCommand;
 #[cfg(feature = "ingest")]
-pub use push::PushCommand;
+pub(crate) use pop::PopCommand;
 #[cfg(feature = "ingest")]
-pub use pop::PopCommand;
+pub(crate) use push::PushCommand;
 
 #[cfg(feature = "search")]
-pub use query::QueryCommand;
+pub(crate) use query::QueryCommand;
 #[cfg(feature = "search")]
-pub use suggest::SuggestCommand;
+pub(crate) use suggest::SuggestCommand;
 
 use crate::result::Result;
 

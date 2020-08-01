@@ -13,7 +13,6 @@ const RE_START_RECEIVED_MESSAGE: &str = r"(?x)
     buffer\((?P<buffer_size>\d+)\)
 ";
 
-#[doc(hidden)]
 #[derive(Debug)]
 pub struct StartCommand {
     pub mode: ChannelMode,

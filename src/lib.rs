@@ -71,7 +71,6 @@ mod commands;
 pub mod result;
 
 pub use channel::*;
-pub use commands::*;
 
 #[macro_use]
 extern crate lazy_static;

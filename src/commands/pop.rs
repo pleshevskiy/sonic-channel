@@ -1,7 +1,6 @@
 use super::StreamCommand;
 use crate::result::{Error, ErrorKind, Result};
 
-#[doc(hidden)]
 #[derive(Debug, Default)]
 pub struct PopCommand<'a> {
     pub collection: &'a str,

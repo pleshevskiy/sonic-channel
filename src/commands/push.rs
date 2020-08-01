@@ -1,7 +1,6 @@
 use super::StreamCommand;
 use crate::result::Result;
 
-#[doc(hidden)]
 #[derive(Debug, Default)]
 pub struct PushCommand<'a> {
     pub collection: &'a str,
