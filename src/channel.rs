@@ -189,10 +189,21 @@ impl SonicChannel {
     /// I think we shouldn't separate commands connect and start because we haven't
     /// possibility to change channel in sonic server, if we already chosen one of them. 🤔
     ///
-    /// ```rust
+    /// ```rust,no_run
     /// use sonic_channel::*;
     ///
-    /// SonicChannel::connect_with_start(ChannelMode::Search, "localhost:1491", "SecretPassword");
+    /// fn main() -> result::Result<()> {
+    ///     let channel = SonicChannel::connect_with_start(
+    ///         ChannelMode::Search,
+    ///         "localhost:1491",
+    ///         "SecretPassword"
+    ///     )?;
+    /// 
+    ///     // Now you can use all method of Search channel.
+    ///     let objects = channel.query("search", "default", "beef");
+    ///     
+    ///     Ok(())
+    /// }
     /// ```
     pub fn connect_with_start<A, S>(mode: ChannelMode, addr: A, password: S) -> Result<Self>
     where

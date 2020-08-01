@@ -8,7 +8,7 @@
 //!
 //! Note: This example requires enabling the `search` feature, enabled by default.
 //! 
-//! ```rust
+//! ```rust,no_run
 //! use sonic_channel::*;
 //! 
 //! fn main() -> result::Result<()> {
@@ -29,7 +29,7 @@
 //! 
 //! Note: This example requires enabling the `ingest` feature.
 //!
-//! ```rust
+//! ```rust,no_run
 //! use sonic_channel::*;
 //! 
 //! fn main() -> result::Result<()> {
