@@ -1,9 +1,7 @@
 use super::StreamCommand;
 use crate::result::{Error, ErrorKind, Result};
-use regex::Regex;
 
-const RE_QUERY_RECEIVED_MESSAGE: &str = r"^RESULT (?P<flush_count>\d+)\r\n$";
-
+#[doc(hidden)]
 #[derive(Debug, Default)]
 pub struct FlushCommand<'a> {
     pub collection: &'a str,
@@ -28,21 +26,17 @@ impl StreamCommand for FlushCommand<'_> {
     }
 
     fn receive(&self, message: String) -> Result<Self::Response> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(RE_QUERY_RECEIVED_MESSAGE).unwrap();
-        }
-
-        dbg!(&message);
-
-        match RE.captures(&message) {
-            None => Err(Error::new(ErrorKind::QueryResponseError(
-                "Sonic response are wrong. Please write issue to github.",
-            ))),
-            Some(caps) => caps["flush_count"].parse().map_err(|_| {
+        if message.starts_with("RESULT ") {
+            let count = message.split_whitespace().last().unwrap_or_default();
+            count.parse().map_err(|_| {
                 Error::new(ErrorKind::QueryResponseError(
-                    "Cannot parse sonic response to uint",
+                    "Cannot parse count of flush method response to usize",
                 ))
-            }),
+            })
+        } else {
+            Err(Error::new(ErrorKind::QueryResponseError(
+                "Sonic response are wrong. Please write issue to github.",
+            )))
         }
     }
 }

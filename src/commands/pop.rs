@@ -11,7 +11,7 @@ pub struct PopCommand<'a> {
 }
 
 impl StreamCommand for PopCommand<'_> {
-    type Response = u32;
+    type Response = usize;
 
     fn message(&self) -> String {
         let mut message = format!(
@@ -23,11 +23,13 @@ impl StreamCommand for PopCommand<'_> {
     }
 
     fn receive(&self, message: String) -> Result<Self::Response> {
-        if message.starts_with("RESULT") {
+        if message.starts_with("RESULT ") {
             let count = message.split_whitespace().last().unwrap_or_default();
             count
                 .parse()
-                .map_err(|_| Error::new(ErrorKind::QueryResponseError("Cannot parse pop count")))
+                .map_err(|_| Error::new(ErrorKind::QueryResponseError(
+                    "Cannot parse count of pop method response to usize",
+                )))
 
         } else {
             Err(Error::new(ErrorKind::QueryResponseError("Cannot parse result")))

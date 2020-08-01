@@ -54,26 +54,26 @@ macro_rules! init_commands {
 #[derive(Debug, Clone, Copy)]
 pub enum ChannelMode {
     /// Sonic server search channel mode.
-    /// 
+    ///
     /// In this mode you can use `query`, `suggest`, `ping` and `quit` commands.
-    /// 
+    ///
     /// Note: This mode requires enabling the `search` feature.
     #[cfg(feature = "search")]
     Search,
 
     /// Sonic server ingest channel mode.
-    /// 
-    /// In this mode you can use `push`, `pop`, `flushc`, `flushb`, `flusho`, 
+    ///
+    /// In this mode you can use `push`, `pop`, `flushc`, `flushb`, `flusho`,
     /// `ping` and `quit` commands.
-    /// 
+    ///
     /// Note: This mode requires enabling the `ingest` feature.
     #[cfg(feature = "ingest")]
     Ingest,
 
     /// Sonic server control channel mode.
-    /// 
+    ///
     /// In this mode you can use `ping` and `quit` commands.
-    /// 
+    ///
     /// Note: This mode requires enabling the `control` feature.
     #[cfg(feature = "control")]
     Control,
@@ -191,7 +191,7 @@ impl SonicChannel {
     ///
     /// ```rust
     /// use sonic_channel::*;
-    /// 
+    ///
     /// SonicChannel::connect_with_start(ChannelMode::Search, "localhost:1491", "SecretPassword");
     /// ```
     pub fn connect_with_start<A, S>(mode: ChannelMode, addr: A, password: S) -> Result<Self>
@@ -215,7 +215,32 @@ impl SonicChannel {
 
     #[cfg(feature = "ingest")]
     init_commands! {
-        #[doc="Push search data in the index."]
+        #[doc=r#"
+        Push search data in the index.
+
+        Note: This method requires enabling the `ingest` feature and start
+        connection in Ingest mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Ingest, 
+            "localhost:1491", 
+            "SecretPassword"
+        )?;
+
+        let result = ingest_channel.push(
+            "search", 
+            "default", 
+            "recipe:295", 
+            "Sweet Teriyaki Beef Skewers"
+        )?;
+        assert_eq!(result, true);
+        # Ok(())
+        # }
+        ```
+        "#]
         use PushCommand for fn push<'a>(
             collection: &'a str,
             bucket: &'a str,
@@ -223,7 +248,34 @@ impl SonicChannel {
             text: &'a str,
         );
 
-        #[doc="Push search data in the index with locale parameter in ISO 639-3 code."]
+        #[doc=r#"
+        Push search data in the index with locale parameter in ISO 639-3 code.
+
+        Note: This method requires enabling the `ingest` feature and start 
+        connection in Ingest mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Ingest, 
+            "localhost:1491", 
+            "SecretPassword"
+        )?;
+
+        let result = ingest_channel.push_with_locale(
+            "search", 
+            "default", 
+            "recipe:296", 
+            "Гренки с жареным картофелем и сыром", 
+            "rus"
+        )?;
+        assert_eq!(result, true);
+        # Ok(())
+        # }
+        ```
+        "#]
+        #[doc=""]
         use PushCommand for fn push_with_locale<'a>(
             collection: &'a str,
             bucket: &'a str,
@@ -233,11 +285,24 @@ impl SonicChannel {
         );
 
         #[doc=r#"
-        Pop search data from the index. Returns removed words count as u32 type.
+        Pop search data from the index. Returns removed words count as usize type.
 
-        ```rust
-        let result = ingest_channel.pop("search", "default", "recipe:295", "cake")?;
-        dbg!(result);
+        Note: This method requires enabling the `ingest` feature and start 
+        connection in Ingest mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Ingest, 
+            "localhost:1491", 
+            "SecretPassword"
+        )?;
+
+        let result = ingest_channel.pop("search", "default", "recipe:295", "beef")?;
+        assert_eq!(result, 1);
+        # Ok(())
+        # }
         ```
         "#]
         use PopCommand for fn pop<'a>(
@@ -247,18 +312,78 @@ impl SonicChannel {
             text: &'a str,
         );
 
-        #[doc="Flush all indexed data from collections."]
+        #[doc=r#"
+        Flush all indexed data from collections.
+
+        Note: This method requires enabling the `ingest` feature and start 
+        connection in Ingest mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Ingest, 
+            "localhost:1491", 
+            "SecretPassword"
+        )?;
+
+        let flushc_count = ingest_channel.flushc("search")?;
+        dbg!(flushc_count);
+        # Ok(())
+        # }
+        ```
+        "#]
         use FlushCommand for fn flushc<'a>(
             collection: &'a str,
         );
 
-        #[doc="Flush all indexed data from bucket in a collection."]
+        #[doc=r#"
+        Flush all indexed data from bucket in a collection.
+
+        Note: This method requires enabling the `ingest` feature and start 
+        connection in Ingest mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Ingest, 
+            "localhost:1491", 
+            "SecretPassword"
+        )?;
+
+        let flushb_count = ingest_channel.flushb("search", "default")?;
+        dbg!(flushb_count);
+        # Ok(())
+        # }
+        ```
+        "#]
         use FlushCommand for fn flushb<'a>(
             collection: &'a str,
             bucket: &'a str => Some(bucket),
         );
 
-        #[doc="Flush all indexed data from an object in a bucket in collection."]
+        #[doc=r#"
+        Flush all indexed data from an object in a bucket in collection.
+
+        Note: This method requires enabling the `ingest` feature and start 
+        connection in Ingest mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Ingest, 
+            "localhost:1491", 
+            "SecretPassword"
+        )?;
+
+        let flusho_count = ingest_channel.flusho("search", "default", "recipe:296")?;
+        dbg!(flusho_count);
+        # Ok(())
+        # }
+        ```
+        "#]
         use FlushCommand for fn flusho<'a>(
             collection: &'a str,
             bucket: &'a str => Some(bucket),
