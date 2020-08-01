@@ -1,6 +1,7 @@
 use super::StreamCommand;
 use crate::result::*;
 
+#[doc(hidden)]
 #[derive(Debug, Default)]
 pub struct PingCommand;
 

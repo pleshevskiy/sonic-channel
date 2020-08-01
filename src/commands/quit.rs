@@ -1,6 +1,7 @@
 use super::StreamCommand;
 use crate::result::Result;
 
+#[doc(hidden)]
 #[derive(Debug, Default)]
 pub struct QuitCommand;
 
