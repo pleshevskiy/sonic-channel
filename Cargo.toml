@@ -16,13 +16,13 @@ readme = "README.md"
 
 [dependencies]
 lazy_static = "1.4.0"
-regex = { version = "1.3.4", optional = true }
+regex = "1.3.4"
 
 [features]
 default = ["search"]
 
 ingest = []
-search = ["regex"]
+search = []
 control = []
 
 
