@@ -48,6 +48,27 @@
 //! }
 //! ```
 //! 
+//! ### Control channel
+//! 
+//! Note: This example requires enabling the `control` feature.
+//!
+//! ```rust,no_run
+//! use sonic_channel::*;
+//! 
+//! fn main() -> result::Result<()> {
+//!     let mut channel = SonicChannel::connect_with_start(
+//!         ChannelMode::Control,
+//!         "localhost:1491",
+//!         "SecretPassword",
+//!     )?;
+//! 
+//!     let result = channel.consolidate()?;
+//!     assert_eq!(result, true);
+//! 
+//!     Ok(())
+//! }
+//! ```
+//! 
 //! [sonic]: https://github.com/valeriansaliou/sonic
 
 // Rustc lints.

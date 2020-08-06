@@ -17,6 +17,9 @@ mod query;
 #[cfg(feature = "search")]
 mod suggest;
 
+#[cfg(feature = "control")]
+mod trigger;
+
 pub(crate) use quit::QuitCommand;
 pub(crate) use start::StartCommand;
 
@@ -35,6 +38,9 @@ pub(crate) use push::PushCommand;
 pub(crate) use query::QueryCommand;
 #[cfg(feature = "search")]
 pub(crate) use suggest::SuggestCommand;
+
+#[cfg(feature = "control")]
+pub(crate) use trigger::{TriggerCommand, TriggerAction};
 
 use crate::result::Result;
 

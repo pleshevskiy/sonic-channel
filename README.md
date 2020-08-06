@@ -7,18 +7,18 @@ We recommend you start with the [documentation].
 
 ## Installation
 
-Add `sonic-channel = { version = "0.2" }` as a dependency in `Cargo.toml`.
+Add `sonic-channel = { version = "0.3" }` as a dependency in `Cargo.toml`.
 
 `Cargo.toml` example:
 
 ```toml
 [package]
 name = "my-crate"
-version = "0.2.0"
+version = "0.1.0"
 authors = ["Me <user@rust-lang.org>"]
 
 [dependencies]
-sonic-channel = { version = "0.2" }
+sonic-channel = { version = "0.3" }
 ```
 
 
@@ -63,6 +63,27 @@ fn main() -> result::Result<()> {
     // or
     // let pushed = channel.push_with_locale("collection", "bucket", "object:1", "Мой лучший рецепт", "rus")?;
     dbg!(pushed);
+
+    Ok(())
+}
+```
+
+### Control channel
+
+Note: This example requires enabling the `control` feature.
+
+```rust
+use sonic_channel::*;
+
+fn main() -> result::Result<()> {
+    let mut channel = SonicChannel::connect_with_start(
+        ChannelMode::Control,
+        "localhost:1491",
+        "SecretPassword",
+    )?;
+
+    let result = channel.consolidate()?;
+    assert_eq!(result, true);
 
     Ok(())
 }

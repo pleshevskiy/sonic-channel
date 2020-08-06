@@ -1,7 +1,6 @@
 use super::StreamCommand;
 use crate::result::*;
 
-#[doc(hidden)]
 #[derive(Debug, Default)]
 pub struct CountCommand<'a> {
     pub collection: &'a str,

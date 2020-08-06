@@ -519,13 +519,13 @@ impl SonicChannel {
         ```rust,no_run
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
-        let ingest_channel = SonicChannel::connect_with_start(
+        let search_channel = SonicChannel::connect_with_start(
             ChannelMode::Search,
             "localhost:1491",
             "SecretPassword",
         )?;
 
-        let result = ingest_channel.query("search", "default", "Beef")?;
+        let result = search_channel.query("search", "default", "Beef")?;
         dbg!(result);
         # Ok(())
         # }
@@ -547,13 +547,13 @@ impl SonicChannel {
         ```rust,no_run
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
-        let ingest_channel = SonicChannel::connect_with_start(
+        let search_channel = SonicChannel::connect_with_start(
             ChannelMode::Search,
             "localhost:1491",
             "SecretPassword",
         )?;
 
-        let result = ingest_channel.query_with_limit(
+        let result = search_channel.query_with_limit(
             "search",
             "default",
             "Beef",
@@ -581,13 +581,13 @@ impl SonicChannel {
         ```rust,no_run
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
-        let ingest_channel = SonicChannel::connect_with_start(
+        let search_channel = SonicChannel::connect_with_start(
             ChannelMode::Search,
             "localhost:1491",
             "SecretPassword",
         )?;
 
-        let result = ingest_channel.query_with_limit_and_offset(
+        let result = search_channel.query_with_limit_and_offset(
             "search",
             "default",
             "Beef",
@@ -616,13 +616,13 @@ impl SonicChannel {
         ```rust,no_run
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
-        let ingest_channel = SonicChannel::connect_with_start(
+        let search_channel = SonicChannel::connect_with_start(
             ChannelMode::Search,
             "localhost:1491",
             "SecretPassword",
         )?;
 
-        let result = ingest_channel.suggest("search", "default", "Beef")?;
+        let result = search_channel.suggest("search", "default", "Beef")?;
         dbg!(result);
         # Ok(())
         # }
@@ -634,7 +634,6 @@ impl SonicChannel {
             word: &'a str,
         );
 
-        
         #[doc=r#"
         Suggest auto-completes words with limit.
 
@@ -644,13 +643,13 @@ impl SonicChannel {
         ```rust,no_run
         # use sonic_channel::*;
         # fn main() -> result::Result<()> {
-        let ingest_channel = SonicChannel::connect_with_start(
+        let search_channel = SonicChannel::connect_with_start(
             ChannelMode::Search,
             "localhost:1491",
             "SecretPassword",
         )?;
 
-        let result = ingest_channel.suggest_with_limit("search", "default", "Beef", 5)?;
+        let result = search_channel.suggest_with_limit("search", "default", "Beef", 5)?;
         dbg!(result);
         # Ok(())
         # }
@@ -665,5 +664,85 @@ impl SonicChannel {
     }
 
     #[cfg(feature = "control")]
-    init_commands! {}
+    init_commands! {
+        #[doc=r#"
+        Consolidate indexed search data instead of waiting for the next automated
+        consolidation tick.
+
+        Note: This method requires enabling the `control` feature and start 
+        connection in Control mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let control_channel = SonicChannel::connect_with_start(
+            ChannelMode::Control,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let result = control_channel.consolidate()?;
+        assert_eq!(result, true);
+        # Ok(())
+        # }
+        ```
+        "#]
+        use TriggerCommand for fn consolidate();
+
+        #[doc=r#"
+        Backup KV + FST to <path>/<BACKUP_{KV/FST}_PATH>
+        See [sonic backend source code](https://github.com/valeriansaliou/sonic/blob/master/src/channel/command.rs#L808)
+        for more information.
+
+        Note: This method requires enabling the `control` feature and start 
+        connection in Control mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let control_channel = SonicChannel::connect_with_start(
+            ChannelMode::Control,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let result = control_channel.backup("2020-08-07T23-48")?;
+        assert_eq!(result, true);
+        # Ok(())
+        # }
+        ```
+        "#]
+        use TriggerCommand for fn backup<'a>(
+            // It's not action, but my macro cannot support alias for custom argument.
+            // TODO: Add alias to macro and rename argument of this function.
+            action: &'a str => TriggerAction::Backup(action),
+        );
+
+        #[doc=r#"
+        Restore KV + FST from <path> if you already have backup with the same name.
+
+        Note: This method requires enabling the `control` feature and start 
+        connection in Control mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let control_channel = SonicChannel::connect_with_start(
+            ChannelMode::Control,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let result = control_channel.restore("2020-08-07T23-48")?;
+        assert_eq!(result, true);
+        # Ok(())
+        # }
+        ```
+        "#]
+        use TriggerCommand for fn restore<'a>(
+            // It's not action, but my macro cannot support alias for custom argument.
+            // TODO: Add alias to macro and rename argument of this function.
+            action: &'a str => TriggerAction::Restore(action),
+        );
+    }
 }
