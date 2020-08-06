@@ -1,5 +1,5 @@
 use super::StreamCommand;
-use crate::result::{Error, ErrorKind, Result};
+use crate::result::*;
 
 #[derive(Debug, Default)]
 pub struct PopCommand<'a> {
@@ -31,7 +31,7 @@ impl StreamCommand for PopCommand<'_> {
                 )))
 
         } else {
-            Err(Error::new(ErrorKind::QueryResponseError("Cannot parse result")))
+            Err(Error::new(ErrorKind::WrongSonicResponse))
         }
     }
 }

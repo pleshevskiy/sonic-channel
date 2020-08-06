@@ -4,7 +4,7 @@ use std::fmt;
 /// Sugar if you expect only sonic-channel error type in result
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// Wrap for sonic channel error kind. This type has std::error::Error 
+/// Wrap for sonic channel error kind. This type has std::error::Error
 /// implementation and you can use boxed trait for catch other errors
 /// like this.
 #[derive(Debug)]
@@ -16,10 +16,10 @@ impl StdError for Error {}
 
 impl Error {
     /// Creates new Error with sonic channel error kind
-    /// 
+    ///
     /// ```rust
     /// use sonic_channel::result::*;
-    /// 
+    ///
     /// let err = Error::new(ErrorKind::ConnectToServer);
     /// ```
     pub fn new(kind: ErrorKind) -> Self {
@@ -47,6 +47,10 @@ pub enum ErrorKind {
 
     /// Error in query response with additional message.
     QueryResponseError(&'static str),
+
+    /// Response from sonic server are wrong! Actually it may happen if you use 
+    /// unsupported sonic backend version. Please write issue to the github repo.
+    WrongSonicResponse,
 }
 
 impl fmt::Display for Error {
@@ -59,6 +63,9 @@ impl fmt::Display for Error {
             ErrorKind::RunCommand => write!(f, "Cannot run command in current mode"),
             ErrorKind::QueryResponseError(message) => {
                 write!(f, "Error in query response: {}", message)
+            }
+            ErrorKind::WrongSonicResponse => {
+                write!(f, "Sonic response are wrong. Please write issue to github.")
             }
         }
     }

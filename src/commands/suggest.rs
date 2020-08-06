@@ -40,9 +40,7 @@ impl StreamCommand for SuggestCommand<'_> {
         dbg!(&message);
 
         match RE.captures(&message) {
-            None => Err(Error::new(ErrorKind::QueryResponseError(
-                "Sonic response are wrong. Please write issue to github.",
-            ))),
+            None => Err(Error::new(ErrorKind::WrongSonicResponse)),
             Some(caps) => {
                 if &caps["pending_suggest_id"] != &caps["event_suggest_id"] {
                     Err(Error::new(ErrorKind::QueryResponseError(

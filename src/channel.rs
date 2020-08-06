@@ -428,6 +428,84 @@ impl SonicChannel {
             bucket: &'a str => Some(bucket),
             object: &'a str => Some(object),
         );
+
+        #[doc=r#"
+        Bucket count in indexed search data of your collection.
+
+        Note: This method requires enabling the `ingest` feature and start 
+        connection in Ingest mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Ingest,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let bucket_count = ingest_channel.bucket_count("search")?;
+        dbg!(bucket_count);
+        # Ok(())
+        # }
+        ```
+        "#]
+        use CountCommand for fn bucket_count<'a>(
+            collection: &'a str,
+        );
+
+        #[doc=r#"
+        Object count of bucket in indexed search data.
+
+        Note: This method requires enabling the `ingest` feature and start 
+        connection in Ingest mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Ingest,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let object_count = ingest_channel.object_count("search", "default")?;
+        dbg!(object_count);
+        # Ok(())
+        # }
+        ```
+        "#]
+        use CountCommand for fn object_count<'a>(
+            collection: &'a str,
+            bucket: &'a str => Some(bucket),
+        );
+        
+        #[doc=r#"
+        Object word count in indexed bucket search data.
+
+        Note: This method requires enabling the `ingest` feature and start 
+        connection in Ingest mode.
+
+        ```rust,no_run
+        # use sonic_channel::*;
+        # fn main() -> result::Result<()> {
+        let ingest_channel = SonicChannel::connect_with_start(
+            ChannelMode::Ingest,
+            "localhost:1491",
+            "SecretPassword",
+        )?;
+
+        let word_count = ingest_channel.word_count("search", "default", "recipe:296")?;
+        dbg!(word_count);
+        # Ok(())
+        # }
+        ```
+        "#]
+        use CountCommand for fn word_count<'a>(
+            collection: &'a str,
+            bucket: &'a str => Some(bucket),
+            object: &'a str => Some(object),
+        );
     }
 
     #[cfg(feature = "search")]
@@ -572,7 +650,7 @@ impl SonicChannel {
             "SecretPassword",
         )?;
 
-        let result = ingest_channel.suggest("search", "default", "Beef", 5)?;
+        let result = ingest_channel.suggest_with_limit("search", "default", "Beef", 5)?;
         dbg!(result);
         # Ok(())
         # }

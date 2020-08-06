@@ -44,9 +44,7 @@ impl StreamCommand for QueryCommand<'_> {
         dbg!(&message);
 
         match RE.captures(&message) {
-            None => Err(Error::new(ErrorKind::QueryResponseError(
-                "Sonic response are wrong. Please write issue to github.",
-            ))),
+            None => Err(Error::new(ErrorKind::WrongSonicResponse)),
             Some(caps) => {
                 if &caps["pending_query_id"] != &caps["event_query_id"] {
                     Err(Error::new(ErrorKind::QueryResponseError(

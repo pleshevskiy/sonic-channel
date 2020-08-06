@@ -4,6 +4,8 @@ mod start;
 mod ping;
 
 #[cfg(feature = "ingest")]
+mod count;
+#[cfg(feature = "ingest")]
 mod flush;
 #[cfg(feature = "ingest")]
 mod pop;
@@ -20,6 +22,8 @@ pub(crate) use start::StartCommand;
 
 pub(crate) use ping::PingCommand;
 
+#[cfg(feature = "ingest")]
+pub(crate) use count::CountCommand;
 #[cfg(feature = "ingest")]
 pub(crate) use flush::FlushCommand;
 #[cfg(feature = "ingest")]

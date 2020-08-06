@@ -1,5 +1,5 @@
 use super::StreamCommand;
-use crate::result::Result;
+use crate::result::*;
 
 #[derive(Debug, Default)]
 pub struct QuitCommand;
@@ -13,6 +13,10 @@ impl StreamCommand for QuitCommand {
 
     fn receive(&self, message: String) -> Result<Self::Response> {
         dbg!(&message);
-        Ok(message.starts_with("ENDED "))
+        if message.starts_with("ENDED ") {
+            Ok(true)
+        } else {
+            Err(Error::new(ErrorKind::WrongSonicResponse))
+        }
     }
 }
