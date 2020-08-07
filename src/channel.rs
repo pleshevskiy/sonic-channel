@@ -5,7 +5,6 @@ use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::net::{TcpStream, ToSocketAddrs};
 
 const DEFAULT_SONIC_PROTOCOL_VERSION: usize = 1;
-const MAX_LINE_BUFFER_SIZE: usize = 20000;
 const UNINITIALIZED_MODE_MAX_BUFFER_SIZE: usize = 200;
 
 macro_rules! init_commands {

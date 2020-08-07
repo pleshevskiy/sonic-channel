@@ -72,7 +72,6 @@
 //! [sonic]: https://github.com/valeriansaliou/sonic
 
 // Rustc lints.
-#![allow(dead_code)]
 #![deny(
     missing_debug_implementations,
     unsafe_code,
