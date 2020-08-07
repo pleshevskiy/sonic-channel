@@ -1,3 +1,4 @@
+use crate::channel::ChannelMode;
 use std::error::Error as StdError;
 use std::fmt;
 
@@ -48,9 +49,12 @@ pub enum ErrorKind {
     /// Error in query response with additional message.
     QueryResponseError(&'static str),
 
-    /// Response from sonic server are wrong! Actually it may happen if you use 
+    /// Response from sonic server are wrong! Actually it may happen if you use
     /// unsupported sonic backend version. Please write issue to the github repo.
     WrongSonicResponse,
+
+    /// You cannot run the command in current channel.
+    UnsupportedCommand((&'static str, Option<ChannelMode>)),
 }
 
 impl fmt::Display for Error {
@@ -66,6 +70,21 @@ impl fmt::Display for Error {
             }
             ErrorKind::WrongSonicResponse => {
                 write!(f, "Sonic response are wrong. Please write issue to github.")
+            }
+            ErrorKind::UnsupportedCommand((command_name, channel_mode)) => {
+                if let Some(channel_mode) = channel_mode {
+                    write!(
+                        f,
+                        "You cannot use `{}` command in {} sonic channel mode",
+                        command_name, channel_mode
+                    )
+                } else {
+                    write!(
+                        f,
+                        "You need to connect to sonic channel before use {} command",
+                        command_name
+                    )
+                }
             }
         }
     }

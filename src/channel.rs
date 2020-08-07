@@ -16,7 +16,8 @@ macro_rules! init_commands {
             for fn $fn_name:ident
             $(<$($lt:lifetime)+>)? (
                 $($args:tt)*
-            );
+            )
+            $(where mode is $condition:expr)?;
         )*
     ) => {
         $(
@@ -26,6 +27,7 @@ macro_rules! init_commands {
                 for fn $fn_name $(<$($lt)+>)? (
                     $($args)*
                 )
+                $(where $condition)?
             );
         )*
     };
@@ -36,6 +38,7 @@ macro_rules! init_commands {
         for fn $fn_name:ident $(<$($lt:lifetime)+>)? (
             $($arg_name:ident : $arg_type:ty $( => $arg_value:expr)?,)*
         )
+        $(where $condition:expr)?
     ) => {
         $(#[$outer])*
         pub fn $fn_name $(<$($lt)+>)? (
@@ -44,6 +47,17 @@ macro_rules! init_commands {
         ) -> $crate::result::Result<
             <$cmd_name as $crate::commands::StreamCommand>::Response,
         > {
+            $(
+                let mode = self.mode.clone();
+                if mode != Some($condition) {
+                    return Err(Error::new(
+                        ErrorKind::UnsupportedCommand((
+                            stringify!($fn_name), 
+                            mode,
+                        ))
+                    ));
+                }
+            )?
             let command = $cmd_name { $($arg_name $(: $arg_value)?,)* ..Default::default() };
             self.run_command(command)
         }
@@ -51,7 +65,7 @@ macro_rules! init_commands {
 }
 
 /// Channel modes supported by sonic search backend.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ChannelMode {
     /// Sonic server search channel mode.
     ///
@@ -199,7 +213,7 @@ impl SonicChannel {
     ///         "localhost:1491",
     ///         "SecretPassword"
     ///     )?;
-    /// 
+    ///
     ///     // Now you can use all method of Search channel.
     ///     let objects = channel.query("search", "default", "beef");
     ///     
@@ -287,7 +301,7 @@ impl SonicChannel {
             bucket: &'a str,
             object: &'a str,
             text: &'a str,
-        );
+        ) where mode is ChannelMode::Ingest;
 
         #[doc=r#"
         Push search data in the index with locale parameter in ISO 639-3 code.
@@ -322,7 +336,7 @@ impl SonicChannel {
             object: &'a str,
             text: &'a str,
             locale: &'a str => Some(locale),
-        );
+        ) where mode is ChannelMode::Ingest;
 
         #[doc=r#"
         Pop search data from the index. Returns removed words count as usize type.
@@ -350,7 +364,7 @@ impl SonicChannel {
             bucket: &'a str,
             object: &'a str,
             text: &'a str,
-        );
+        ) where mode is ChannelMode::Ingest;
 
         #[doc=r#"
         Flush all indexed data from collections.
@@ -375,7 +389,7 @@ impl SonicChannel {
         "#]
         use FlushCommand for fn flushc<'a>(
             collection: &'a str,
-        );
+        ) where mode is ChannelMode::Ingest;
 
         #[doc=r#"
         Flush all indexed data from bucket in a collection.
@@ -401,7 +415,7 @@ impl SonicChannel {
         use FlushCommand for fn flushb<'a>(
             collection: &'a str,
             bucket: &'a str => Some(bucket),
-        );
+        ) where mode is ChannelMode::Ingest;
 
         #[doc=r#"
         Flush all indexed data from an object in a bucket in collection.
@@ -428,7 +442,7 @@ impl SonicChannel {
             collection: &'a str,
             bucket: &'a str => Some(bucket),
             object: &'a str => Some(object),
-        );
+        ) where mode is ChannelMode::Ingest;
 
         #[doc=r#"
         Bucket count in indexed search data of your collection.
@@ -453,7 +467,7 @@ impl SonicChannel {
         "#]
         use CountCommand for fn bucket_count<'a>(
             collection: &'a str,
-        );
+        ) where mode is ChannelMode::Ingest;
 
         #[doc=r#"
         Object count of bucket in indexed search data.
@@ -479,8 +493,8 @@ impl SonicChannel {
         use CountCommand for fn object_count<'a>(
             collection: &'a str,
             bucket: &'a str => Some(bucket),
-        );
-        
+        ) where mode is ChannelMode::Ingest;
+
         #[doc=r#"
         Object word count in indexed bucket search data.
 
@@ -506,7 +520,7 @@ impl SonicChannel {
             collection: &'a str,
             bucket: &'a str => Some(bucket),
             object: &'a str => Some(object),
-        );
+        ) where mode is ChannelMode::Ingest;
     }
 
     #[cfg(feature = "search")]
@@ -536,7 +550,7 @@ impl SonicChannel {
             collection: &'a str,
             bucket: &'a str,
             terms: &'a str,
-        );
+        ) where mode is ChannelMode::Search;
 
         #[doc=r#"
         Query limited objects in database. This method similar query but
@@ -570,7 +584,7 @@ impl SonicChannel {
             bucket: &'a str,
             terms: &'a str,
             limit: usize => Some(limit),
-        );
+        ) where mode is ChannelMode::Search;
 
         #[doc=r#"
         Query limited objects in database. This method similar 
@@ -606,7 +620,7 @@ impl SonicChannel {
             terms: &'a str,
             limit: usize => Some(limit),
             offset: usize => Some(offset),
-        );
+        ) where mode is ChannelMode::Search;
 
         #[doc=r#"
         Suggest auto-completes words.
@@ -633,7 +647,7 @@ impl SonicChannel {
             collection: &'a str,
             bucket: &'a str,
             word: &'a str,
-        );
+        ) where mode is ChannelMode::Search;
 
         #[doc=r#"
         Suggest auto-completes words with limit.
@@ -661,7 +675,7 @@ impl SonicChannel {
             bucket: &'a str,
             word: &'a str,
             limit: usize => Some(limit),
-        );
+        ) where mode is ChannelMode::Search;
     }
 
     #[cfg(feature = "control")]
@@ -688,7 +702,8 @@ impl SonicChannel {
         # }
         ```
         "#]
-        use TriggerCommand for fn consolidate();
+        use TriggerCommand for fn consolidate()
+            where mode is ChannelMode::Control;
 
         #[doc=r#"
         Backup KV + FST to <path>/<BACKUP_{KV/FST}_PATH>
@@ -717,7 +732,7 @@ impl SonicChannel {
             // It's not action, but my macro cannot support alias for custom argument.
             // TODO: Add alias to macro and rename argument of this function.
             action: &'a str => TriggerAction::Backup(action),
-        );
+        ) where mode is ChannelMode::Control;
 
         #[doc=r#"
         Restore KV + FST from <path> if you already have backup with the same name.
@@ -744,6 +759,6 @@ impl SonicChannel {
             // It's not action, but my macro cannot support alias for custom argument.
             // TODO: Add alias to macro and rename argument of this function.
             action: &'a str => TriggerAction::Restore(action),
-        );
+        ) where mode is ChannelMode::Control;
     }
 }
