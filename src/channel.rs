@@ -64,7 +64,7 @@ pub enum ChannelMode {
     /// Sonic server ingest channel mode.
     ///
     /// In this mode you can use `push`, `pop`, `flushc`, `flushb`, `flusho`,
-    /// `ping` and `quit` commands.
+    /// `bucket_count`, `object_count`, `word_count`, `ping` and `quit` commands.
     ///
     /// Note: This mode requires enabling the `ingest` feature.
     #[cfg(feature = "ingest")]
@@ -72,7 +72,8 @@ pub enum ChannelMode {
 
     /// Sonic server control channel mode.
     ///
-    /// In this mode you can use `ping` and `quit` commands.
+    /// In this mode you can use `consolidate`, `backup`, `restore`,
+    /// `ping` and `quit` commands.
     ///
     /// Note: This mode requires enabling the `control` feature.
     #[cfg(feature = "control")]
