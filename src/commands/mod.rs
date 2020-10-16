@@ -40,7 +40,7 @@ pub(crate) use query::QueryCommand;
 pub(crate) use suggest::SuggestCommand;
 
 #[cfg(feature = "control")]
-pub(crate) use trigger::{TriggerCommand, TriggerAction};
+pub(crate) use trigger::{TriggerAction, TriggerCommand};
 
 use crate::result::Result;
 

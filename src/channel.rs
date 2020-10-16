@@ -51,7 +51,7 @@ macro_rules! init_commands {
                 if mode != Some($condition) {
                     return Err(Error::new(
                         ErrorKind::UnsupportedCommand((
-                            stringify!($fn_name), 
+                            stringify!($fn_name),
                             mode,
                         ))
                     ));

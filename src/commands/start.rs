@@ -40,24 +40,23 @@ impl StreamCommand for StartCommand {
 
         dbg!(&message);
 
-        match RE.captures(&message) {
-            None => Err(Error::new(ErrorKind::SwitchMode)),
-            Some(caps) => {
-                if self.mode.to_str() != &caps["mode"] {
-                    Err(Error::new(ErrorKind::SwitchMode))
-                } else {
-                    let protocol_version: usize =
-                        caps["protocol"].parse().expect("Must be digit by regex");
-                    let max_buffer_size: usize =
-                        caps["buffer_size"].parse().expect("Must be digit by regex");
+        if let Some(caps) = RE.captures(&message) {
+            if self.mode.to_str() != &caps["mode"] {
+                Err(Error::new(ErrorKind::SwitchMode))
+            } else {
+                let protocol_version: usize =
+                    caps["protocol"].parse().expect("Must be digit by regex");
+                let max_buffer_size: usize =
+                    caps["buffer_size"].parse().expect("Must be digit by regex");
 
-                    Ok(StartCommandResponse {
-                        protocol_version,
-                        max_buffer_size,
-                        mode: self.mode,
-                    })
-                }
+                Ok(StartCommandResponse {
+                    protocol_version,
+                    max_buffer_size,
+                    mode: self.mode,
+                })
             }
+        } else {
+            Err(Error::new(ErrorKind::SwitchMode))
         }
     }
 }

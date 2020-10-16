@@ -49,7 +49,10 @@ impl StreamCommand for SuggestCommand<'_> {
                 } else if caps["words"].is_empty() {
                     Ok(vec![])
                 } else {
-                    Ok(caps["words"].split_whitespace().map(str::to_owned).collect())
+                    Ok(caps["words"]
+                        .split_whitespace()
+                        .map(str::to_owned)
+                        .collect())
                 }
             }
         }
