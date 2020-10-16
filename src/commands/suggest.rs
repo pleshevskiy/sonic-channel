@@ -42,14 +42,14 @@ impl StreamCommand for SuggestCommand<'_> {
         match RE.captures(&message) {
             None => Err(Error::new(ErrorKind::WrongSonicResponse)),
             Some(caps) => {
-                if &caps["pending_suggest_id"] != &caps["event_suggest_id"] {
+                if caps["pending_suggest_id"] != caps["event_suggest_id"] {
                     Err(Error::new(ErrorKind::QueryResponseError(
                         "Pending id and event id don't match",
                     )))
                 } else if caps["words"].is_empty() {
                     Ok(vec![])
                 } else {
-                    Ok(caps["words"].split(" ").map(str::to_owned).collect())
+                    Ok(caps["words"].split_whitespace().map(str::to_owned).collect())
                 }
             }
         }

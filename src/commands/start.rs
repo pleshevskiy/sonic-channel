@@ -44,7 +44,7 @@ impl StreamCommand for StartCommand {
             None => Err(Error::new(ErrorKind::SwitchMode)),
             Some(caps) => {
                 if self.mode.to_str() != &caps["mode"] {
-                    return Err(Error::new(ErrorKind::SwitchMode));
+                    Err(Error::new(ErrorKind::SwitchMode))
                 } else {
                     let protocol_version: usize =
                         caps["protocol"].parse().expect("Must be digit by regex");

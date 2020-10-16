@@ -57,6 +57,7 @@ macro_rules! init_commands {
                     ));
                 }
             )?
+            #[allow(clippy::needless_update)]
             let command = $cmd_name { $($arg_name $(: $arg_value)?,)* ..Default::default() };
             self.run_command(command)
         }

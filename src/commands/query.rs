@@ -46,14 +46,14 @@ impl StreamCommand for QueryCommand<'_> {
         match RE.captures(&message) {
             None => Err(Error::new(ErrorKind::WrongSonicResponse)),
             Some(caps) => {
-                if &caps["pending_query_id"] != &caps["event_query_id"] {
+                if caps["pending_query_id"] != caps["event_query_id"] {
                     Err(Error::new(ErrorKind::QueryResponseError(
                         "Pending id and event id don't match",
                     )))
                 } else if caps["objects"].is_empty() {
                     Ok(vec![])
                 } else {
-                    Ok(caps["objects"].split(" ").map(str::to_owned).collect())
+                    Ok(caps["objects"].split_whitespace().map(str::to_owned).collect())
                 }
             }
         }

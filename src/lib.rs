@@ -80,6 +80,8 @@
     unused_qualifications
 )]
 #![warn(missing_docs)]
+// Clippy lints
+#![deny(clippy::all)]
 
 #[cfg(not(any(feature = "ingest", feature = "search", feature = "control")))]
 compile_error!(r#"Either features "ingest" or "search" or "control" must be enabled for "sonic-channel" crate"#);
