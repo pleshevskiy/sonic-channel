@@ -12,8 +12,7 @@
 //! use sonic_channel::*;
 //!
 //! fn main() -> result::Result<()> {
-//!     let channel = SonicChannel::connect_with_start(
-//!         ChannelMode::Search,
+//!     let channel = SearchChannel::start(
 //!         "localhost:1491",
 //!         "SecretPassword",
 //!     )?;
@@ -33,8 +32,7 @@
 //! use sonic_channel::*;
 //!
 //! fn main() -> result::Result<()> {
-//!     let mut channel = SonicChannel::connect_with_start(
-//!         ChannelMode::Ingest,
+//!     let mut channel = IngestChannel::start(
 //!         "localhost:1491",
 //!         "SecretPassword",
 //!     )?;
@@ -56,8 +54,7 @@
 //! use sonic_channel::*;
 //!
 //! fn main() -> result::Result<()> {
-//!     let mut channel = SonicChannel::connect_with_start(
-//!         ChannelMode::Control,
+//!     let mut channel = ControlChannel::start(
 //!         "localhost:1491",
 //!         "SecretPassword",
 //!     )?;
@@ -88,13 +85,16 @@ compile_error!(
     r#"Either features "ingest" or "search" or "control" must be enabled for "sonic-channel" crate"#
 );
 
-mod channel;
+#[macro_use]
+mod macroses;
+
+mod channels;
 mod commands;
 
 /// Contains sonic channel error type and custom Result type for easy configure your functions.
 pub mod result;
 
-pub use channel::*;
+pub use channels::*;
 
 #[macro_use]
 extern crate lazy_static;
@@ -102,7 +102,7 @@ extern crate regex;
 
 #[cfg(test)]
 mod tests {
-    use crate::channel::ChannelMode;
+    use crate::channels::ChannelMode;
 
     #[test]
     fn format_channel_enums() {

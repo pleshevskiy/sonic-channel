@@ -1,5 +1,5 @@
 use super::StreamCommand;
-use crate::channel::ChannelMode;
+use crate::channels::ChannelMode;
 use crate::result::*;
 use regex::Regex;
 

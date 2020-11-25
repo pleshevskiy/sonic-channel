@@ -32,12 +32,7 @@ Note: This example requires enabling the `search` feature, enabled by default.
 use sonic_channel::*;
 
 fn main() -> result::Result<()> {
-    let channel = SonicChannel::connect_with_start(
-        ChannelMode::Search,
-        "localhost:1491",
-        "SecretPassword",
-    )?;
-
+    let channel = SearchChannel::start("localhost:1491", "SecretPassword")?;
     let objects = channel.query("collection", "bucket", "recipe")?;
     dbg!(objects);
 
@@ -53,12 +48,7 @@ Note: This example requires enabling the `ingest` feature.
 use sonic_channel::*;
 
 fn main() -> result::Result<()> {
-    let mut channel = SonicChannel::connect_with_start(
-        ChannelMode::Ingest,
-        "localhost:1491",
-        "SecretPassword",
-    )?;
-
+    let channel = IngestChannel::start("localhost:1491", "SecretPassword")?;
     let pushed = channel.push("collection", "bucket", "object:1", "my best recipe")?;
     // or
     // let pushed = channel.push_with_locale("collection", "bucket", "object:1", "Мой лучший рецепт", "rus")?;
@@ -76,12 +66,7 @@ Note: This example requires enabling the `control` feature.
 use sonic_channel::*;
 
 fn main() -> result::Result<()> {
-    let mut channel = SonicChannel::connect_with_start(
-        ChannelMode::Control,
-        "localhost:1491",
-        "SecretPassword",
-    )?;
-
+    let channel = ControlChannel::start("localhost:1491", "SecretPassword")?;
     let result = channel.consolidate()?;
     assert_eq!(result, true);
 
