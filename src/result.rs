@@ -1,4 +1,4 @@
-use crate::channel::ChannelMode;
+use crate::channels::ChannelMode;
 use std::error::Error as StdError;
 use std::fmt;
 
