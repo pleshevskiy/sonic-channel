@@ -91,7 +91,6 @@ impl SonicStream {
     fn write<SC: StreamCommand>(&self, command: &SC) -> Result<()> {
         let mut writer = BufWriter::with_capacity(self.max_buffer_size, &self.stream);
         let message = command.message();
-        dbg!(&message);
         writer
             .write_all(message.as_bytes())
             .map_err(|_| Error::new(ErrorKind::WriteToStream))?;
@@ -131,7 +130,6 @@ impl SonicStream {
         };
 
         let message = channel.read(1)?;
-        dbg!(&message);
         // TODO: need to add support for versions
         if message.starts_with("CONNECTED") {
             Ok(channel)

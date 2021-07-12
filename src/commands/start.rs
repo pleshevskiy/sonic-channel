@@ -38,8 +38,6 @@ impl StreamCommand for StartCommand {
             static ref RE: Regex = Regex::new(RE_START_RECEIVED_MESSAGE).unwrap();
         }
 
-        dbg!(&message);
-
         if let Some(caps) = RE.captures(&message) {
             if self.mode.to_str() != &caps["mode"] {
                 Err(Error::new(ErrorKind::SwitchMode))
