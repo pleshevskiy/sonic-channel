@@ -26,8 +26,6 @@ impl StreamCommand for PushCommand<'_> {
     }
 
     fn receive(&self, message: String) -> Result<Self::Response> {
-        dbg!(&message);
-
         if message == "OK\r\n" {
             Ok(true)
         } else {
