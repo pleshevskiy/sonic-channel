@@ -55,7 +55,7 @@ pub enum ChannelMode {
 
 impl ChannelMode {
     /// Converts enum to &str
-    pub fn to_str(&self) -> &str {
+    pub fn as_str(&self) -> &str {
         match self {
             #[cfg(feature = "search")]
             ChannelMode::Search => "search",
@@ -71,7 +71,7 @@ impl ChannelMode {
 
 impl fmt::Display for ChannelMode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
-        write!(f, "{}", self.to_str())
+        write!(f, "{}", self.as_str())
     }
 }
 

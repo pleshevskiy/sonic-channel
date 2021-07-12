@@ -39,7 +39,7 @@ impl StreamCommand for StartCommand {
         }
 
         if let Some(caps) = RE.captures(&message) {
-            if self.mode.to_str() != &caps["mode"] {
+            if self.mode.as_str() != &caps["mode"] {
                 Err(Error::new(ErrorKind::SwitchMode))
             } else {
                 let protocol_version: usize =
