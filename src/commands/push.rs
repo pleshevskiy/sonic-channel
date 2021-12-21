@@ -16,7 +16,10 @@ impl StreamCommand for PushCommand<'_> {
     fn message(&self) -> String {
         let mut message = format!(
             r#"PUSH {} {} {} "{}""#,
-            self.collection, self.bucket, self.object, self.text
+            self.collection,
+            self.bucket,
+            self.object,
+            remove_multiline(self.text)
         );
         if let Some(locale) = self.locale.as_ref() {
             message.push_str(&format!(" LANG({})", locale));
@@ -28,8 +31,41 @@ impl StreamCommand for PushCommand<'_> {
     fn receive(&self, message: String) -> Result<Self::Response> {
         if message == "OK\r\n" {
             Ok(true)
+        } else if message.starts_with("ERR ") {
+            Err(Error::new(ErrorKind::QueryResponseError(Box::leak(
+                message.into_boxed_str(),
+            ))))
         } else {
             Err(Error::new(ErrorKind::WrongSonicResponse))
         }
+    }
+}
+
+fn remove_multiline(text: &str) -> String {
+    text.split('\n')
+        .enumerate()
+        .fold(String::new(), |mut acc, (i, line)| {
+            if i != 0 && !line.is_empty() && !acc.is_empty() && !acc.ends_with(' ') {
+                acc.push(' ');
+            }
+
+            acc.push_str(line);
+            acc
+        })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::remove_multiline;
+
+    #[test]
+    fn should_make_single_line() {
+        let text = "
+Hello
+World
+";
+
+        let expected_text = "Hello World";
+        assert_eq!(remove_multiline(text), expected_text);
     }
 }
