@@ -31,12 +31,8 @@ impl StreamCommand for PushCommand<'_> {
     fn receive(&self, message: String) -> Result<Self::Response> {
         if message == "OK\r\n" {
             Ok(true)
-        } else if message.starts_with("ERR ") {
-            Err(Error::new(ErrorKind::QueryResponseError(Box::leak(
-                message.into_boxed_str(),
-            ))))
         } else {
-            Err(Error::new(ErrorKind::WrongSonicResponse))
+            Err(Error::new(ErrorKind::WrongResponse))
         }
     }
 }
