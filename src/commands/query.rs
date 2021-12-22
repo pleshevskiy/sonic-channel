@@ -43,7 +43,7 @@ impl StreamCommand for QueryCommand<'_> {
 
         if let Some(caps) = RE.captures(&message) {
             if caps["pending_query_id"] != caps["event_query_id"] {
-                Err(Error::new(ErrorKind::QueryResponseError(
+                Err(Error::new(ErrorKind::QueryResponse(
                     "Pending id and event id don't match",
                 )))
             } else if caps["objects"].is_empty() {
@@ -55,7 +55,7 @@ impl StreamCommand for QueryCommand<'_> {
                     .collect())
             }
         } else {
-            Err(Error::new(ErrorKind::WrongSonicResponse))
+            Err(Error::new(ErrorKind::WrongResponse))
         }
     }
 }

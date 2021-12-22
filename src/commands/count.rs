@@ -28,12 +28,12 @@ impl StreamCommand for CountCommand<'_> {
         if message.starts_with("RESULT ") {
             let count = message.split_whitespace().last().unwrap_or_default();
             count.parse().map_err(|_| {
-                Error::new(ErrorKind::QueryResponseError(
+                Error::new(ErrorKind::QueryResponse(
                     "Cannot parse count of count method response to usize",
                 ))
             })
         } else {
-            Err(Error::new(ErrorKind::WrongSonicResponse))
+            Err(Error::new(ErrorKind::WrongResponse))
         }
     }
 }

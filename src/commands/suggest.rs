@@ -38,10 +38,10 @@ impl StreamCommand for SuggestCommand<'_> {
         }
 
         match RE.captures(&message) {
-            None => Err(Error::new(ErrorKind::WrongSonicResponse)),
+            None => Err(Error::new(ErrorKind::WrongResponse)),
             Some(caps) => {
                 if caps["pending_suggest_id"] != caps["event_suggest_id"] {
-                    Err(Error::new(ErrorKind::QueryResponseError(
+                    Err(Error::new(ErrorKind::QueryResponse(
                         "Pending id and event id don't match",
                     )))
                 } else if caps["words"].is_empty() {

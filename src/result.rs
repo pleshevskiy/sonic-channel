@@ -47,14 +47,17 @@ pub enum ErrorKind {
     RunCommand,
 
     /// Error in query response with additional message.
-    QueryResponseError(&'static str),
+    QueryResponse(&'static str),
 
     /// Response from sonic server are wrong! Actually it may happen if you use
     /// unsupported sonic backend version. Please write issue to the github repo.
-    WrongSonicResponse,
+    WrongResponse,
 
     /// You cannot run the command in current channel.
     UnsupportedCommand((&'static str, Option<ChannelMode>)),
+
+    /// This error appears if the error occurred on the server side
+    SonicServer(&'static str),
 }
 
 impl fmt::Display for Error {
@@ -65,11 +68,11 @@ impl fmt::Display for Error {
             ErrorKind::ReadStream => write!(f, "Cannot read sonic response from stream"),
             ErrorKind::SwitchMode => write!(f, "Cannot switch channel mode"),
             ErrorKind::RunCommand => write!(f, "Cannot run command in current mode"),
-            ErrorKind::QueryResponseError(message) => {
+            ErrorKind::QueryResponse(message) => {
                 write!(f, "Error in query response: {}", message)
             }
-            ErrorKind::WrongSonicResponse => {
-                write!(f, "Sonic response are wrong. Please write issue to github.")
+            ErrorKind::WrongResponse => {
+                write!(f, "Client cannot parse response from sonic server. Please write an issue to github (https://github.com/pleshevskiy/sonic-channel).")
             }
             ErrorKind::UnsupportedCommand((command_name, channel_mode)) => {
                 if let Some(channel_mode) = channel_mode {
@@ -86,6 +89,7 @@ impl fmt::Display for Error {
                     )
                 }
             }
+            ErrorKind::SonicServer(message) => write!(f, "Sonic Server-side error: {}", message),
         }
     }
 }

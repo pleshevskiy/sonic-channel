@@ -101,12 +101,13 @@ impl SonicStream {
         let mut reader = BufReader::with_capacity(self.max_buffer_size, &self.stream);
         let mut message = String::new();
 
-        let mut lines_read = 0;
-        while lines_read < max_read_lines {
+        for _ in 0..max_read_lines {
             reader
                 .read_line(&mut message)
                 .map_err(|_| Error::new(ErrorKind::ReadStream))?;
-            lines_read += 1;
+            if message.starts_with("ERR ") {
+                break;
+            }
         }
 
         Ok(message)
@@ -115,7 +116,13 @@ impl SonicStream {
     pub(crate) fn run_command<SC: StreamCommand>(&self, command: SC) -> Result<SC::Response> {
         self.write(&command)?;
         let message = self.read(SC::READ_LINES_COUNT)?;
-        command.receive(message)
+        if let Some(error) = message.strip_prefix("ERR ") {
+            Err(Error::new(ErrorKind::SonicServer(Box::leak(
+                error.to_owned().into_boxed_str(),
+            ))))
+        } else {
+            command.receive(message)
+        }
     }
 
     fn connect<A: ToSocketAddrs>(addr: A) -> Result<Self> {
@@ -211,4 +218,16 @@ pub trait SonicChannel {
     where
         A: ToSocketAddrs,
         S: ToString;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ChannelMode;
+
+    #[test]
+    fn format_channel_enums() {
+        assert_eq!(format!("{}", ChannelMode::Search), String::from("search"));
+        assert_eq!(format!("{}", ChannelMode::Ingest), String::from("ingest"));
+        assert_eq!(format!("{}", ChannelMode::Control), String::from("control"));
+    }
 }
