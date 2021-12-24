@@ -13,6 +13,14 @@ pub fn search_start() -> SearchChannel {
     SearchChannel::start(HOST, PASS).expect("The Sonic server must be running")
 }
 
+pub fn control_start() -> ControlChannel {
+    ControlChannel::start(HOST, PASS).expect("The Sonic server must be running")
+}
+
+pub fn consolidate() {
+    control_start().consolidate().unwrap();
+}
+
 pub fn flush_bucket(collection: &str, bucket: &str) {
     ingest_start().flushb(collection, bucket).unwrap();
 }
