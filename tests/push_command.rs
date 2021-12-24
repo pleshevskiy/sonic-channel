@@ -15,3 +15,21 @@ fn should_push_new_object_to_sonic() {
 
     flush_collection(COLLECTION);
 }
+
+#[test]
+fn should_push_new_object_to_sonic_with_russian_locale() {
+    let ingest_channel = ingest_start();
+
+    match ingest_channel.push_with_locale(
+        COLLECTION,
+        BUCKET,
+        "1",
+        "Открытый пирог с орехами и сгущенкой",
+        "rus",
+    ) {
+        Ok(res) => assert!(res),
+        Err(_) => unreachable!(),
+    }
+
+    flush_collection(COLLECTION);
+}
