@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  sonic:
+    image: valeriansaliou/sonic:v1.3.0
+    ports:
+      - 36999:1491
+    volumes:
+      - sonic_data:/var/lib/sonic/store/
+      - ./sonic.cfg:/etc/sonic.cfg
+
+volumes:
+  sonic_data:
