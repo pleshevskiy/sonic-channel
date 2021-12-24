@@ -93,3 +93,33 @@ fn should_find_many_objects() {
 
     flush_bucket(COLLECTION, bucket);
 }
+
+#[test]
+fn should_find_limited_objects() {
+    let bucket = "query_limited_objects";
+
+    let ingest_channel = ingest_start();
+    ingest_channel
+        .push(COLLECTION, bucket, "1", "Sweet Teriyaki Beef Skewers")
+        .unwrap();
+    ingest_channel
+        .push(COLLECTION, bucket, "2", "Slow Cooker Beef Stew I")
+        .unwrap();
+    ingest_channel
+        .push(COLLECTION, bucket, "3", "Christmas Prime Rib")
+        .unwrap();
+
+    let search_channel = search_start();
+    match search_channel.query_with_limit(COLLECTION, bucket, "Beef", 1) {
+        Ok(object_ids) => assert_eq!(object_ids, vec!["2"]),
+        Err(_) => unreachable!(),
+    }
+
+    let search_channel = search_start();
+    match search_channel.query_with_limit_and_offset(COLLECTION, bucket, "Beef", 1, 1) {
+        Ok(object_ids) => assert_eq!(object_ids, vec!["1"]),
+        Err(_) => unreachable!(),
+    }
+
+    flush_bucket(COLLECTION, bucket);
+}
