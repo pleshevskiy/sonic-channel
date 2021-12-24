@@ -57,4 +57,6 @@ fn should_find_many_objects() {
         Ok(object_ids) => assert_eq!(object_ids, vec!["2", "1"]),
         Err(_) => unreachable!(),
     }
+
+    flush_collection(COLLECTION);
 }
