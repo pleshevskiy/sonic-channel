@@ -13,6 +13,6 @@ pub fn search_start() -> SearchChannel {
     SearchChannel::start(HOST, PASS).expect("The Sonic server must be running")
 }
 
-pub fn flush_collection(collection: &str) {
-    ingest_start().flushc(collection).unwrap();
+pub fn flush_bucket(collection: &str, bucket: &str) {
+    ingest_start().flushb(collection, bucket).unwrap();
 }
