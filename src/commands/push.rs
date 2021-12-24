@@ -38,7 +38,7 @@ impl StreamCommand for PushCommand<'_> {
 }
 
 fn remove_multiline(text: &str) -> String {
-    text.split('\n')
+    text.lines()
         .enumerate()
         .fold(String::new(), |mut acc, (i, line)| {
             if i != 0 && !line.is_empty() && !acc.is_empty() && !acc.ends_with(' ') {
