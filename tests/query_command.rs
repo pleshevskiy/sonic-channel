@@ -23,14 +23,44 @@ fn should_find_object_by_exact_match() {
 #[test]
 fn should_find_object_by_partial_match() {
     let bucket = "query_by_partial_match";
-    let title = "Sweet Teriyaki Beef Skewers";
 
     let ingest_channel = ingest_start();
-    ingest_channel.push(COLLECTION, bucket, "1", title).unwrap();
+    ingest_channel
+        .push(COLLECTION, bucket, "1", "Sweet Teriyaki Beef Skewers")
+        .unwrap();
 
     let search_channel = search_start();
 
-    for word in title.split_whitespace() {
+    let words = ["Sweet", "Teriyaki", "Beef", "Skewers"];
+    for word in words {
+        match search_channel.query(COLLECTION, bucket, word) {
+            Ok(object_ids) => assert_eq!(object_ids, vec!["1"]),
+            Err(_) => unreachable!(),
+        }
+    }
+
+    flush_bucket(COLLECTION, bucket);
+}
+
+#[test]
+fn should_find_multiline_object_by_partial_match() {
+    let bucket = "query_multiline";
+    let multiline_text = "
+Sweet
+Teriyaki
+Beef
+Skewers
+";
+
+    let ingest_channel = ingest_start();
+    ingest_channel
+        .push(COLLECTION, bucket, "1", multiline_text)
+        .unwrap();
+
+    let search_channel = search_start();
+
+    let words = ["Sweet", "Teriyaki", "Beef", "Skewers"];
+    for word in words {
         match search_channel.query(COLLECTION, bucket, word) {
             Ok(object_ids) => assert_eq!(object_ids, vec!["1"]),
             Err(_) => unreachable!(),
