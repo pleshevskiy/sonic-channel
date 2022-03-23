@@ -21,9 +21,21 @@ impl StreamCommand for PushCommand<'_> {
             self.object,
             remove_multiline(self.text)
         );
-        if let Some(locale) = self.locale.as_ref() {
+
+        let locale = self.locale.or_else(|| {
+            whatlang::detect(self.text).and_then(|info| {
+                if info.confidence() == 1.0 {
+                    Some(info.lang().code())
+                } else {
+                    None
+                }
+            })
+        });
+
+        if let Some(locale) = locale {
             message.push_str(&format!(" LANG({})", locale));
         }
+
         message.push_str("\r\n");
         message
     }
