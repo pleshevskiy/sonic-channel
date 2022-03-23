@@ -1,5 +1,4 @@
 use super::StreamCommand;
-use whatlang::{detect};
 use crate::result::*;
 use regex::Regex;
 
@@ -35,9 +34,10 @@ impl StreamCommand for QueryCommand<'_> {
         }
 
         // use greyblake/whatlang-rs to autodect locale
-        let text = detect(self.terms).unwrap();
-        if text.confidence() == 1.0 {
-            message.push_str(&format!(" LANG({})", text.lang().code()));
+        if let Some(info) = whatlang::detect(self.terms) {
+            if info.confidence() == 1.0 {
+                message.push_str(&format!(" LANG({})", info.lang().code()));
+            }
         }
 
         message.push_str("\r\n");
