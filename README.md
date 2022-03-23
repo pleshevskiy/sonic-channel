@@ -4,7 +4,6 @@ Rust client for [sonic] search backend.
 
 We recommend you start with the [documentation].
 
-
 ## Installation
 
 Add `sonic-channel = { version = "0.5" }` as a dependency in `Cargo.toml`.
@@ -20,7 +19,6 @@ authors = ["Me <user@rust-lang.org>"]
 [dependencies]
 sonic-channel = { version = "0.5" }
 ```
-
 
 ## Example usage
 
@@ -74,14 +72,12 @@ fn main() -> result::Result<()> {
 }
 ```
 
-
 ## Available features
 
-* **default** - ["search"]
-* **search** - Add sonic search mode with methods
-* **ignite** - Add sonic ignite mode with methods
-* **control** - Add sonic control mode with methods
-
+- **default** - ["search"]
+- **search** - Add sonic search mode with methods
+- **ingest** - Add sonic ingest mode with methods
+- **control** - Add sonic control mode with methods
 
 [sonic]: https://github.com/valeriansaliou/sonic
 [documentation]: https://docs.rs/sonic-channel
