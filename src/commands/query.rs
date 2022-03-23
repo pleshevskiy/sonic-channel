@@ -1,4 +1,5 @@
 use super::StreamCommand;
+use whatlang::{detect};
 use crate::result::*;
 use regex::Regex;
 
@@ -32,6 +33,13 @@ impl StreamCommand for QueryCommand<'_> {
         if let Some(offset) = self.offset.as_ref() {
             message.push_str(&format!(" OFFSET({})", offset));
         }
+
+        // use greyblake/whatlang-rs to autodect locale
+        let text = detect(self.terms).unwrap();
+        if text.confidence() == 1.0 {
+            message.push_str(&format!(" LANG({})", text.lang().code()));
+        }
+
         message.push_str("\r\n");
         message
     }
