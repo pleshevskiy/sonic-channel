@@ -6,7 +6,7 @@ We recommend you start with the [documentation].
 
 ## Installation
 
-Add `sonic-channel = { version = "0.5" }` as a dependency in `Cargo.toml`.
+Add `sonic-channel = { version = "0.6" }` as a dependency in `Cargo.toml`.
 
 `Cargo.toml` example:
 
@@ -17,8 +17,11 @@ version = "0.1.0"
 authors = ["Me <user@rust-lang.org>"]
 
 [dependencies]
-sonic-channel = { version = "0.5" }
+sonic-channel = { version = "0.6", features = ["ingest"] }
 ```
+
+Add `default-features = false` to dependency, if you want to exclude default
+`search` channel.
 
 ## Example usage
 
