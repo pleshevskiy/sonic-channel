@@ -11,7 +11,7 @@ pub struct StartCommand {
 
 #[derive(Debug)]
 pub struct StartCommandResponse {
-    pub protocol_version: usize,
+    pub protocol_version: protocol::Version,
     pub max_buffer_size: usize,
     pub mode: ChannelMode,
 }
@@ -19,22 +19,22 @@ pub struct StartCommandResponse {
 impl StreamCommand for StartCommand {
     type Response = StartCommandResponse;
 
-    fn format(&self) -> String {
-        format!("START {} {}\r\n", self.mode, self.password)
-    }
-
-    fn send(&self) -> protocol::Request {
+    fn request(&self) -> protocol::Request {
         protocol::Request::Start {
             mode: self.mode,
-            password: self.password,
+            password: self.password.to_string(),
         }
     }
 
     fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
-        if let protocol::Response::Started(res) = res {
+        if let protocol::Response::Started(payload) = res {
             Ok(StartCommandResponse {
-                protocol_version: res.protocol_version,
-                max_buffer_size: res.max_buffer_size,
+                protocol_version: payload
+                    .protocol_version
+                    .try_into()
+                    // TODO: better error
+                    .map_err(|_| Error::SwitchMode)?,
+                max_buffer_size: payload.max_buffer_size,
                 mode: self.mode,
             })
         } else {

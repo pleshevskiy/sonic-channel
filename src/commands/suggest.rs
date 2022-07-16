@@ -13,23 +13,11 @@ pub struct SuggestCommand<'a> {
 impl StreamCommand for SuggestCommand<'_> {
     type Response = Vec<String>;
 
-    fn format(&self) -> String {
-        let mut message = format!(
-            r#"SUGGEST {} {} "{}""#,
-            self.collection, self.bucket, self.word
-        );
-        if let Some(limit) = self.limit.as_ref() {
-            message.push_str(&format!(" LIMIT({})", limit));
-        }
-        message.push_str("\r\n");
-        message
-    }
-
-    fn send(&self) -> protocol::Request {
+    fn request(&self) -> protocol::Request {
         protocol::Request::Suggest {
             collection: self.collection.to_string(),
             bucket: self.bucket.to_string(),
-            terms: self.word.to_string(),
+            word: self.word.to_string(),
             limit: self.limit,
         }
     }

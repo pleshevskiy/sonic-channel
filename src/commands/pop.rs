@@ -13,16 +13,7 @@ pub struct PopCommand<'a> {
 impl StreamCommand for PopCommand<'_> {
     type Response = usize;
 
-    fn format(&self) -> String {
-        let mut message = format!(
-            r#"POP {} {} {} "{}""#,
-            self.collection, self.bucket, self.object, self.text
-        );
-        message.push_str("\r\n");
-        message
-    }
-
-    fn send(&self) -> protocol::Request {
+    fn request(&self) -> protocol::Request {
         protocol::Request::Pop {
             collection: self.collection.to_string(),
             bucket: self.bucket.to_string(),

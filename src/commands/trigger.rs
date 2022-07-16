@@ -35,11 +35,7 @@ pub struct TriggerCommand<'a> {
 impl StreamCommand for TriggerCommand<'_> {
     type Response = ();
 
-    fn format(&self) -> String {
-        format!("TRIGGER {}\r\n", self.action)
-    }
-
-    fn send(&self) -> protocol::Request {
+    fn request(&self) -> protocol::Request {
         let req = match self.action {
             TriggerAction::Consolidate => protocol::TriggerRequest::Consolidate,
             TriggerAction::Backup(path) => protocol::TriggerRequest::Backup(PathBuf::from(path)),

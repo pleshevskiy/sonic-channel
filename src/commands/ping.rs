@@ -8,11 +8,7 @@ pub struct PingCommand;
 impl StreamCommand for PingCommand {
     type Response = ();
 
-    fn format(&self) -> String {
-        String::from("PING\r\n")
-    }
-
-    fn send(&self) -> protocol::Request {
+    fn request(&self) -> protocol::Request {
         protocol::Request::Ping
     }
 

@@ -18,10 +18,9 @@ use std::io::{BufRead, BufReader, Write};
 use std::net::{TcpStream, ToSocketAddrs};
 
 use crate::commands::{StartCommand, StreamCommand};
-use crate::protocol;
+use crate::protocol::{self, Protocol};
 use crate::result::*;
 
-const DEFAULT_SONIC_PROTOCOL_VERSION: usize = 1;
 const UNINITIALIZED_MODE_MAX_BUFFER_SIZE: usize = 200;
 
 /// Channel modes supported by sonic search backend.
@@ -86,15 +85,18 @@ pub struct SonicStream {
     reader: RefCell<BufReader<TcpStream>>,
     mode: Option<ChannelMode>, // None – Uninitialized mode
     max_buffer_size: usize,
-    protocol_version: usize,
+    protocol: Protocol,
 }
 
 impl SonicStream {
-    fn write<SC: StreamCommand>(&self, command: &SC) -> Result<()> {
-        let message = command.format();
+    fn send<SC: StreamCommand>(&self, command: &SC) -> Result<()> {
+        let buf = self
+            .protocol
+            .format_request(command.request())
+            .map_err(|_| Error::WriteToStream)?;
         self.stream
             .borrow_mut()
-            .write_all(message.as_bytes())
+            .write_all(&buf)
             .map_err(|_| Error::WriteToStream)?;
         Ok(())
     }
@@ -109,62 +111,12 @@ impl SonicStream {
             line
         };
 
-        dbg!(&line);
-
-        let mut segments = line.split_whitespace();
-        match segments.next() {
-            Some("STARTED") => match (segments.next(), segments.next(), segments.next()) {
-                (Some(_raw_mode), Some(raw_protocol), Some(raw_buffer_size)) => {
-                    Ok(protocol::Response::Started(protocol::StartedPayload {
-                        protocol_version: protocol::parse_server_config(raw_protocol)?,
-                        max_buffer_size: protocol::parse_server_config(raw_buffer_size)?,
-                    }))
-                }
-                _ => Err(Error::WrongResponse),
-            },
-            Some("PENDING") => {
-                let event_id = segments
-                    .next()
-                    .map(String::from)
-                    .ok_or(Error::WrongResponse)?;
-                Ok(protocol::Response::Pending(event_id))
-            }
-            Some("RESULT") => match segments.next() {
-                Some(num) => num
-                    .parse()
-                    .map(protocol::Response::Result)
-                    .map_err(|_| Error::WrongResponse),
-                _ => Err(Error::WrongResponse),
-            },
-            Some("EVENT") => {
-                let event_kind = match segments.next() {
-                    Some("SUGGEST") => Ok(protocol::EventKind::Suggest),
-                    Some("QUERY") => Ok(protocol::EventKind::Query),
-                    _ => Err(Error::WrongResponse),
-                }?;
-
-                let event_id = segments
-                    .next()
-                    .map(String::from)
-                    .ok_or(Error::WrongResponse)?;
-
-                let objects = segments.map(String::from).collect();
-
-                Ok(protocol::Response::Event(event_kind, event_id, objects))
-            }
-            Some("OK") => Ok(protocol::Response::Ok),
-            Some("ENDED") => Ok(protocol::Response::Ended),
-            Some("CONNECTED") => Ok(protocol::Response::Connected),
-            Some("ERR") => match segments.next() {
-                Some(message) => Err(Error::SonicServer(String::from(message))),
-                _ => Err(Error::WrongResponse),
-            },
-            _ => Err(Error::WrongResponse),
-        }
+        log::debug!("[channel] {}", &line);
+        self.protocol.parse_response(&line)
     }
 
     pub(crate) fn run_command<SC: StreamCommand>(&self, command: SC) -> Result<SC::Response> {
-        self.write(&command)?;
+        self.send(&command)?;
         let res = loop {
             let res = self.read_line()?;
             if !matches!(&res, protocol::Response::Pending(_)) {
@@ -183,7 +135,7 @@ impl SonicStream {
             stream: RefCell::new(stream),
             mode: None,
             max_buffer_size: UNINITIALIZED_MODE_MAX_BUFFER_SIZE,
-            protocol_version: DEFAULT_SONIC_PROTOCOL_VERSION,
+            protocol: Default::default(),
         };
 
         let res = channel.read_line()?;
@@ -199,15 +151,14 @@ impl SonicStream {
             return Err(Error::RunCommand);
         }
 
-        let command = StartCommand {
+        let res = self.run_command(StartCommand {
             mode,
             password: password.to_string(),
-        };
-        let response = self.run_command(command)?;
+        })?;
 
-        self.max_buffer_size = response.max_buffer_size;
-        self.protocol_version = response.protocol_version;
-        self.mode = Some(response.mode);
+        self.max_buffer_size = res.max_buffer_size;
+        self.protocol = Protocol::from(res.protocol_version);
+        self.mode = Some(res.mode);
 
         Ok(())
     }

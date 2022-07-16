@@ -12,20 +12,7 @@ pub struct FlushCommand<'a> {
 impl StreamCommand for FlushCommand<'_> {
     type Response = usize;
 
-    fn format(&self) -> String {
-        let mut message = match (self.bucket, self.object) {
-            (Some(bucket), Some(object)) => {
-                format!("FLUSHO {} {} {}", self.collection, bucket, object)
-            }
-            (Some(bucket), None) => format!("FLUSHB {} {}", self.collection, bucket),
-            (None, None) => format!("FLUSHC {}", self.collection),
-            _ => panic!("Invalid flush command"),
-        };
-        message.push_str("\r\n");
-        message
-    }
-
-    fn send(&self) -> protocol::Request {
+    fn request(&self) -> protocol::Request {
         let collection = self.collection.to_string();
         let req = match (self.bucket.map(String::from), self.object.map(String::from)) {
             (Some(bucket), Some(object)) => protocol::FlushRequest::Object {

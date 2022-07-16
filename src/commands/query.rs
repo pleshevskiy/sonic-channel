@@ -14,30 +14,7 @@ pub struct QueryCommand<'a> {
 impl StreamCommand for QueryCommand<'_> {
     type Response = Vec<String>;
 
-    fn format(&self) -> String {
-        let mut message = format!(
-            r#"QUERY {} {} "{}""#,
-            self.collection, self.bucket, self.terms
-        );
-        if let Some(limit) = self.limit.as_ref() {
-            message.push_str(&format!(" LIMIT({})", limit));
-        }
-        if let Some(offset) = self.offset.as_ref() {
-            message.push_str(&format!(" OFFSET({})", offset));
-        }
-
-        // use greyblake/whatlang-rs to autodect locale
-        if let Some(info) = whatlang::detect(self.terms) {
-            if info.confidence() == 1.0 {
-                message.push_str(&format!(" LANG({})", info.lang().code()));
-            }
-        }
-
-        message.push_str("\r\n");
-        message
-    }
-
-    fn send(&self) -> protocol::Request {
+    fn request(&self) -> protocol::Request {
         let lang = whatlang::detect(self.terms)
             .and_then(|i| (i.confidence() == 1.0).then(|| i.lang().code()));
         protocol::Request::Query {

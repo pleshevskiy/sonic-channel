@@ -12,20 +12,7 @@ pub struct CountCommand<'a> {
 impl StreamCommand for CountCommand<'_> {
     type Response = usize;
 
-    fn format(&self) -> String {
-        let mut message = format!("COUNT {}", self.collection);
-        if let Some(bucket) = self.bucket {
-            message.push_str(&format!(" {}", bucket));
-
-            if let Some(object) = self.object {
-                message.push_str(&format!(" {}", object));
-            }
-        }
-        message.push_str("\r\n");
-        message
-    }
-
-    fn send(&self) -> protocol::Request {
+    fn request(&self) -> protocol::Request {
         protocol::Request::Count {
             collection: self.collection.to_string(),
             bucket: self.bucket.map(String::from),

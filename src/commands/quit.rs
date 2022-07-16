@@ -8,11 +8,7 @@ pub struct QuitCommand;
 impl StreamCommand for QuitCommand {
     type Response = ();
 
-    fn format(&self) -> String {
-        String::from("QUIT\r\n")
-    }
-
-    fn send(&self) -> protocol::Request {
+    fn request(&self) -> protocol::Request {
         protocol::Request::Quit
     }
 

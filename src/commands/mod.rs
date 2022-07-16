@@ -48,9 +48,7 @@ use crate::result::Result;
 pub trait StreamCommand {
     type Response;
 
-    fn format(&self) -> String;
-
-    fn send(&self) -> protocol::Request;
+    fn request(&self) -> protocol::Request;
 
     fn receive(&self, res: protocol::Response) -> Result<Self::Response>;
 }
