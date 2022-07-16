@@ -1,4 +1,5 @@
 use super::StreamCommand;
+use crate::protocol;
 use crate::result::*;
 
 #[derive(Debug, Default)]
@@ -11,7 +12,7 @@ pub struct CountCommand<'a> {
 impl StreamCommand for CountCommand<'_> {
     type Response = usize;
 
-    fn message(&self) -> String {
+    fn format(&self) -> String {
         let mut message = format!("COUNT {}", self.collection);
         if let Some(bucket) = self.bucket {
             message.push_str(&format!(" {}", bucket));
@@ -24,16 +25,11 @@ impl StreamCommand for CountCommand<'_> {
         message
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message.starts_with("RESULT ") {
-            let count = message.split_whitespace().last().unwrap_or_default();
-            count.parse().map_err(|_| {
-                Error::new(ErrorKind::QueryResponse(
-                    "Cannot parse count of count method response to usize",
-                ))
-            })
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if let protocol::Response::Result(count) = res {
+            Ok(count)
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

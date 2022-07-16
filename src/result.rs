@@ -1,6 +1,4 @@
 use crate::channels::ChannelMode;
-use std::error::Error as StdError;
-use std::fmt;
 
 /// Sugar if you expect only sonic-channel error type in result
 pub type Result<T> = std::result::Result<T, Error>;
@@ -8,29 +6,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// Wrap for sonic channel error kind. This type has std::error::Error
 /// implementation and you can use boxed trait for catch other errors
 /// like this.
-#[derive(Debug)]
-pub struct Error {
-    kind: ErrorKind,
-}
-
-impl StdError for Error {}
-
-impl Error {
-    /// Creates new Error with sonic channel error kind
-    ///
-    /// ```rust
-    /// use sonic_channel::result::*;
-    ///
-    /// let err = Error::new(ErrorKind::ConnectToServer);
-    /// ```
-    pub fn new(kind: ErrorKind) -> Self {
-        Error { kind }
-    }
-}
 
 /// All error kinds that you can see in sonic-channel crate.
 #[derive(Debug)]
-pub enum ErrorKind {
+pub enum Error {
     /// Cannot connect to the sonic search backend.
     ConnectToServer,
 
@@ -57,24 +36,25 @@ pub enum ErrorKind {
     UnsupportedCommand((&'static str, Option<ChannelMode>)),
 
     /// This error appears if the error occurred on the server side
-    SonicServer(&'static str),
+    SonicServer(String),
 }
 
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
-        match self.kind {
-            ErrorKind::ConnectToServer => write!(f, "Cannot connect to server"),
-            ErrorKind::WriteToStream => write!(f, "Cannot write data to stream"),
-            ErrorKind::ReadStream => write!(f, "Cannot read sonic response from stream"),
-            ErrorKind::SwitchMode => write!(f, "Cannot switch channel mode"),
-            ErrorKind::RunCommand => write!(f, "Cannot run command in current mode"),
-            ErrorKind::QueryResponse(message) => {
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use Error::*;
+        match self {
+            ConnectToServer => f.write_str("Cannot connect to server"),
+            WriteToStream => f.write_str("Cannot write data to stream"),
+            ReadStream => f.write_str("Cannot read sonic response from stream"),
+            SwitchMode => f.write_str("Cannot switch channel mode"),
+            RunCommand => f.write_str("Cannot run command in current mode"),
+            QueryResponse(message) => {
                 write!(f, "Error in query response: {}", message)
             }
-            ErrorKind::WrongResponse => {
+            WrongResponse => {
                 write!(f, "Client cannot parse response from sonic server. Please write an issue to github (https://github.com/pleshevskiy/sonic-channel).")
             }
-            ErrorKind::UnsupportedCommand((command_name, channel_mode)) => {
+            UnsupportedCommand((command_name, channel_mode)) => {
                 if let Some(channel_mode) = channel_mode {
                     write!(
                         f,
@@ -89,7 +69,9 @@ impl fmt::Display for Error {
                     )
                 }
             }
-            ErrorKind::SonicServer(message) => write!(f, "Sonic Server-side error: {}", message),
+            SonicServer(message) => write!(f, "Sonic Server-side error: {}", message),
         }
     }
 }
+
+impl std::error::Error for Error {}

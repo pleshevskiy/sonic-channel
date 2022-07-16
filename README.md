@@ -69,7 +69,7 @@ use sonic_channel::*;
 fn main() -> result::Result<()> {
     let channel = ControlChannel::start("localhost:1491", "SecretPassword")?;
     let result = channel.consolidate()?;
-    assert_eq!(result, true);
+    assert_eq!(result, ());
 
     Ok(())
 }

@@ -1,4 +1,5 @@
 use super::StreamCommand;
+use crate::protocol;
 use crate::result::*;
 
 #[derive(Debug, Default)]
@@ -11,9 +12,9 @@ pub struct PushCommand<'a> {
 }
 
 impl StreamCommand for PushCommand<'_> {
-    type Response = bool;
+    type Response = ();
 
-    fn message(&self) -> String {
+    fn format(&self) -> String {
         let mut message = format!(
             r#"PUSH {} {} {} "{}""#,
             self.collection,
@@ -40,15 +41,16 @@ impl StreamCommand for PushCommand<'_> {
         message
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message == "OK\r\n" {
-            Ok(true)
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if matches!(res, protocol::Response::Ok) {
+            Ok(())
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }
 
+// TODO: move to protocol
 fn remove_multiline(text: &str) -> String {
     text.lines()
         .enumerate()

@@ -9,8 +9,8 @@ fn should_push_new_object_to_sonic() {
 
     let ingest_channel = ingest_start();
     match ingest_channel.push(COLLECTION, bucket, "1", "Sweet Teriyaki Beef Skewers") {
-        Ok(res) => assert!(res),
-        Err(_) => unreachable!(),
+        Ok(()) => {}
+        _ => unreachable!(),
     }
 
     flush_bucket(COLLECTION, bucket);
@@ -28,8 +28,8 @@ fn should_push_new_object_to_sonic_with_russian_locale() {
         "Открытый пирог с орехами и сгущенкой",
         "rus",
     ) {
-        Ok(res) => assert!(res),
-        Err(_) => unreachable!(),
+        Ok(()) => {}
+        _ => unreachable!(),
     }
 
     flush_bucket(COLLECTION, bucket);
@@ -47,8 +47,8 @@ Skewers
 
     let ingest_channel = ingest_start();
     match ingest_channel.push(COLLECTION, bucket, "1", multiline_text) {
-        Ok(res) => assert!(res),
-        Err(_) => unreachable!(),
+        Ok(()) => {}
+        _ => unreachable!(),
     }
 
     flush_bucket(COLLECTION, bucket);

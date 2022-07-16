@@ -60,7 +60,7 @@
 //!     )?;
 //!
 //!     let result = channel.consolidate()?;
-//!     assert_eq!(result, true);
+//!     assert_eq!(result, ());
 //!
 //!     Ok(())
 //! }
@@ -91,11 +91,8 @@ mod macroses;
 mod channels;
 mod commands;
 
+pub(crate) mod protocol;
 /// Contains sonic channel error type and custom Result type for easy configure your functions.
 pub mod result;
 
 pub use channels::*;
-
-#[macro_use]
-extern crate lazy_static;
-extern crate regex;

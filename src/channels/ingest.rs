@@ -89,7 +89,7 @@ impl IngestChannel {
         ///     "recipe:295",
         ///     "Sweet Teriyaki Beef Skewers",
         /// )?;
-        /// assert_eq!(result, true);
+        /// assert_eq!(result, ());
         /// # Ok(())
         /// # }
         /// ```
@@ -122,7 +122,7 @@ impl IngestChannel {
         ///     "Гренки с жареным картофелем и сыром",
         ///     "rus",
         /// )?;
-        /// assert_eq!(result, true);
+        /// assert_eq!(result, ());
         /// # Ok(())
         /// # }
         /// ```

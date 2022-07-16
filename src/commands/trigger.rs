@@ -1,4 +1,5 @@
 use super::StreamCommand;
+use crate::protocol;
 use crate::result::*;
 use std::fmt;
 
@@ -31,17 +32,17 @@ pub struct TriggerCommand<'a> {
 }
 
 impl StreamCommand for TriggerCommand<'_> {
-    type Response = bool;
+    type Response = ();
 
-    fn message(&self) -> String {
+    fn format(&self) -> String {
         format!("TRIGGER {}\r\n", self.action)
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message == "OK\r\n" {
-            Ok(true)
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if matches!(res, protocol::Response::Ok) {
+            Ok(())
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

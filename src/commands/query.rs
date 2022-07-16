@@ -1,11 +1,6 @@
 use super::StreamCommand;
+use crate::protocol;
 use crate::result::*;
-use regex::Regex;
-
-const RE_QUERY_RECEIVED_MESSAGE: &str = r"(?x)
-    ^PENDING\s(?P<pending_query_id>\w+)\r\n
-    EVENT\sQUERY\s(?P<event_query_id>\w+)\s(?P<objects>.*?)\r\n$
-";
 
 #[derive(Debug, Default)]
 pub struct QueryCommand<'a> {
@@ -19,9 +14,7 @@ pub struct QueryCommand<'a> {
 impl StreamCommand for QueryCommand<'_> {
     type Response = Vec<String>;
 
-    const READ_LINES_COUNT: usize = 2;
-
-    fn message(&self) -> String {
+    fn format(&self) -> String {
         let mut message = format!(
             r#"QUERY {} {} "{}""#,
             self.collection, self.bucket, self.terms
@@ -44,26 +37,11 @@ impl StreamCommand for QueryCommand<'_> {
         message
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(RE_QUERY_RECEIVED_MESSAGE).unwrap();
-        }
-
-        if let Some(caps) = RE.captures(&message) {
-            if caps["pending_query_id"] != caps["event_query_id"] {
-                Err(Error::new(ErrorKind::QueryResponse(
-                    "Pending id and event id don't match",
-                )))
-            } else if caps["objects"].is_empty() {
-                Ok(vec![])
-            } else {
-                Ok(caps["objects"]
-                    .split_whitespace()
-                    .map(str::to_owned)
-                    .collect())
-            }
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if let protocol::Response::Event(protocol::EventKind::Query, _id, objects) = res {
+            Ok(objects)
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

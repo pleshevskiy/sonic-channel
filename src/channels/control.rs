@@ -85,7 +85,7 @@ impl ControlChannel {
         /// )?;
         ///
         /// let result = control_channel.consolidate()?;
-        /// assert_eq!(result, true);
+        /// assert_eq!(result, ());
         /// # Ok(())
         /// # }
         /// ```
@@ -109,7 +109,7 @@ impl ControlChannel {
         /// )?;
         ///
         /// let result = control_channel.backup("2020-08-07T23-48")?;
-        /// assert_eq!(result, true);
+        /// assert_eq!(result, ());
         /// # Ok(())
         /// # }
         /// ```
@@ -135,7 +135,7 @@ impl ControlChannel {
         /// )?;
         ///
         /// let result = control_channel.restore("2020-08-07T23-48")?;
-        /// assert_eq!(result, true);
+        /// assert_eq!(result, ());
         /// # Ok(())
         /// # }
         /// ```

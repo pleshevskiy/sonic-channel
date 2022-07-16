@@ -1,21 +1,22 @@
 use super::StreamCommand;
+use crate::protocol;
 use crate::result::*;
 
 #[derive(Debug, Default)]
 pub struct PingCommand;
 
 impl StreamCommand for PingCommand {
-    type Response = bool;
+    type Response = ();
 
-    fn message(&self) -> String {
+    fn format(&self) -> String {
         String::from("PING\r\n")
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message == "PONG\r\n" {
-            Ok(true)
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if matches!(res, protocol::Response::Pong) {
+            Ok(())
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

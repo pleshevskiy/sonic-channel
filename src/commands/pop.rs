@@ -1,4 +1,5 @@
 use super::StreamCommand;
+use crate::protocol;
 use crate::result::*;
 
 #[derive(Debug, Default)]
@@ -12,7 +13,7 @@ pub struct PopCommand<'a> {
 impl StreamCommand for PopCommand<'_> {
     type Response = usize;
 
-    fn message(&self) -> String {
+    fn format(&self) -> String {
         let mut message = format!(
             r#"POP {} {} {} "{}""#,
             self.collection, self.bucket, self.object, self.text
@@ -21,16 +22,11 @@ impl StreamCommand for PopCommand<'_> {
         message
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message.starts_with("RESULT ") {
-            let count = message.split_whitespace().last().unwrap_or_default();
-            count.parse().map_err(|_| {
-                Error::new(ErrorKind::QueryResponse(
-                    "Cannot parse count of pop method response to usize",
-                ))
-            })
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if let protocol::Response::Result(count) = res {
+            Ok(count)
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

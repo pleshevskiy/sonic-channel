@@ -1,5 +1,6 @@
 use super::StreamCommand;
-use crate::result::{Error, ErrorKind, Result};
+use crate::protocol;
+use crate::result::*;
 
 #[derive(Debug, Default)]
 pub struct FlushCommand<'a> {
@@ -11,7 +12,7 @@ pub struct FlushCommand<'a> {
 impl StreamCommand for FlushCommand<'_> {
     type Response = usize;
 
-    fn message(&self) -> String {
+    fn format(&self) -> String {
         let mut message = match (self.bucket, self.object) {
             (Some(bucket), Some(object)) => {
                 format!("FLUSHO {} {} {}", self.collection, bucket, object)
@@ -24,16 +25,11 @@ impl StreamCommand for FlushCommand<'_> {
         message
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message.starts_with("RESULT ") {
-            let count = message.split_whitespace().last().unwrap_or_default();
-            count.parse().map_err(|_| {
-                Error::new(ErrorKind::QueryResponse(
-                    "Cannot parse count of flush method response to usize",
-                ))
-            })
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if let protocol::Response::Result(count) = res {
+            Ok(count)
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

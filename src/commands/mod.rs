@@ -42,14 +42,13 @@ pub(crate) use suggest::SuggestCommand;
 #[cfg(feature = "control")]
 pub(crate) use trigger::{TriggerAction, TriggerCommand};
 
+use crate::protocol;
 use crate::result::Result;
 
 pub trait StreamCommand {
     type Response;
 
-    const READ_LINES_COUNT: usize = 1;
+    fn format(&self) -> String;
 
-    fn message(&self) -> String;
-
-    fn receive(&self, message: String) -> Result<Self::Response>;
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response>;
 }
