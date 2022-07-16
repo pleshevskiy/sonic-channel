@@ -12,6 +12,10 @@ impl StreamCommand for PingCommand {
         String::from("PING\r\n")
     }
 
+    fn send(&self) -> protocol::Request {
+        protocol::Request::Ping
+    }
+
     fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
         if matches!(res, protocol::Response::Pong) {
             Ok(())

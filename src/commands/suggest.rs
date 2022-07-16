@@ -25,6 +25,15 @@ impl StreamCommand for SuggestCommand<'_> {
         message
     }
 
+    fn send(&self) -> protocol::Request {
+        protocol::Request::Suggest {
+            collection: self.collection.to_string(),
+            bucket: self.bucket.to_string(),
+            terms: self.word.to_string(),
+            limit: self.limit,
+        }
+    }
+
     fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
         if let protocol::Response::Event(protocol::EventKind::Suggest, _id, words) = res {
             Ok(words)

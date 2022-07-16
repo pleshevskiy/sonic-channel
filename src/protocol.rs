@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::result::*;
+use crate::{result::*, ChannelMode};
 
 //===========================================================================//
 // Primitives                                                                //
@@ -46,8 +46,46 @@ pub enum EventKind {
 //===========================================================================//
 
 pub enum Request {
+    Start {
+        mode: ChannelMode,
+        password: String,
+    },
+    Quit,
+    Ping,
     Trigger(TriggerRequest),
-    Suggest(SuggestRequest),
+    Suggest {
+        collection: String,
+        bucket: String,
+        word: String,
+        limit: Option<usize>,
+    },
+    Query {
+        collection: String,
+        bucket: String,
+        terms: String,
+        offset: Option<usize>,
+        limit: Option<usize>,
+        lang: Option<&'static str>,
+    },
+    Push {
+        collection: String,
+        bucket: String,
+        object: String,
+        terms: String,
+        lang: Option<&'static str>,
+    },
+    Pop {
+        collection: String,
+        bucket: String,
+        object: String,
+        terms: String,
+    },
+    Flush(FlushRequest),
+    Count {
+        collection: String,
+        bucket: Option<String>,
+        object: Option<String>,
+    },
 }
 
 pub enum TriggerRequest {
@@ -56,10 +94,17 @@ pub enum TriggerRequest {
     Restore(PathBuf),
 }
 
-pub struct SuggestRequest {
-    collection: String,
-    bucket: String,
-    word: String,
+pub enum FlushRequest {
+    Collection(String),
+    Bucket {
+        collection: String,
+        bucket: String,
+    },
+    Object {
+        collection: String,
+        bucket: String,
+        object: String,
+    },
 }
 
 //===========================================================================//

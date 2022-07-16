@@ -22,6 +22,15 @@ impl StreamCommand for PopCommand<'_> {
         message
     }
 
+    fn send(&self) -> protocol::Request {
+        protocol::Request::Pop {
+            collection: self.collection.to_string(),
+            bucket: self.bucket.to_string(),
+            object: self.object.to_string(),
+            terms: self.text.to_string(),
+        }
+    }
+
     fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
         if let protocol::Response::Result(count) = res {
             Ok(count)

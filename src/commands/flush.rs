@@ -25,6 +25,22 @@ impl StreamCommand for FlushCommand<'_> {
         message
     }
 
+    fn send(&self) -> protocol::Request {
+        let collection = self.collection.to_string();
+        let req = match (self.bucket.map(String::from), self.object.map(String::from)) {
+            (Some(bucket), Some(object)) => protocol::FlushRequest::Object {
+                collection,
+                bucket,
+                object,
+            },
+            (Some(bucket), None) => protocol::FlushRequest::Bucket { collection, bucket },
+            (None, None) => protocol::FlushRequest::Collection(collection),
+            _ => panic!("Invalid flush command"),
+        };
+
+        protocol::Request::Flush(req)
+    }
+
     fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
         if let protocol::Response::Result(count) = res {
             Ok(count)

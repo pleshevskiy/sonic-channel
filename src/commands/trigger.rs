@@ -2,6 +2,7 @@ use super::StreamCommand;
 use crate::protocol;
 use crate::result::*;
 use std::fmt;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub enum TriggerAction<'a> {
@@ -36,6 +37,16 @@ impl StreamCommand for TriggerCommand<'_> {
 
     fn format(&self) -> String {
         format!("TRIGGER {}\r\n", self.action)
+    }
+
+    fn send(&self) -> protocol::Request {
+        let req = match self.action {
+            TriggerAction::Consolidate => protocol::TriggerRequest::Consolidate,
+            TriggerAction::Backup(path) => protocol::TriggerRequest::Backup(PathBuf::from(path)),
+            TriggerAction::Restore(path) => protocol::TriggerRequest::Restore(PathBuf::from(path)),
+        };
+
+        protocol::Request::Trigger(req)
     }
 
     fn receive(&self, res: protocol::Response) -> Result<Self::Response> {

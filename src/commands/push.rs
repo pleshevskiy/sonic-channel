@@ -41,6 +41,18 @@ impl StreamCommand for PushCommand<'_> {
         message
     }
 
+    fn send(&self) -> protocol::Request {
+        let lang = whatlang::detect(self.text)
+            .and_then(|i| (i.confidence() == 1.0).then(|| i.lang().code()));
+        protocol::Request::Push {
+            collection: self.collection.to_string(),
+            bucket: self.bucket.to_string(),
+            object: self.object.to_string(),
+            terms: self.text.to_string(),
+            lang,
+        }
+    }
+
     fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
         if matches!(res, protocol::Response::Ok) {
             Ok(())

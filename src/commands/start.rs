@@ -23,6 +23,13 @@ impl StreamCommand for StartCommand {
         format!("START {} {}\r\n", self.mode, self.password)
     }
 
+    fn send(&self) -> protocol::Request {
+        protocol::Request::Start {
+            mode: self.mode,
+            password: self.password,
+        }
+    }
+
     fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
         if let protocol::Response::Started(res) = res {
             Ok(StartCommandResponse {

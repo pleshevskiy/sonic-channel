@@ -50,5 +50,7 @@ pub trait StreamCommand {
 
     fn format(&self) -> String;
 
+    fn send(&self) -> protocol::Request;
+
     fn receive(&self, res: protocol::Response) -> Result<Self::Response>;
 }
