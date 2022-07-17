@@ -87,7 +87,7 @@ impl IngestChannel {
         ///     dest: Dest::col("search").obj("recipe:295"),
         ///     text: "Sweet Teriyaki Beef Skewers",
         ///     lang: None,
-        /// )?;
+        /// })?;
         /// assert_eq!(result, ());
         /// # Ok(())
         /// # }
@@ -111,16 +111,16 @@ impl IngestChannel {
         ///     "SecretPassword",
         /// )?;
         ///
-        /// let result = ingest_channel.pop("search", "default", "recipe:295", "beef")?;
+        /// let result = ingest_channel.pop(PopRequest {
+        ///     dest: Dest::col("search").obj("recipe:295"),
+        ///     text: "beef"
+        /// })?;
         /// assert_eq!(result, 1);
         /// # Ok(())
         /// # }
         /// ```
-        use PopCommand for fn pop<'a>(
-            collection: &'a str,
-            bucket: &'a str,
-            object: &'a str,
-            text: &'a str,
+        use PopCommand for fn pop(
+            req: PopRequest,
         );
     );
 
@@ -138,64 +138,19 @@ impl IngestChannel {
         ///     "SecretPassword",
         /// )?;
         ///
-        /// let flushc_count = ingest_channel.flushc("search")?;
+        /// let flushc_count = ingest_channel.flush(FlushRequest::collection("search"))?;
         /// dbg!(flushc_count);
-        /// # Ok(())
-        /// # }
-        /// ```
-        use FlushCommand for fn flushc<'a>(
-            collection: &'a str,
-        );
-    );
-
-    init_command!(
-        /// Flush all indexed data from bucket in a collection.
-        ///
-        /// Note: This method requires enabling the `ingest` feature and start
-        /// connection in Ingest mode.
-        ///
-        /// ```rust,no_run
-        /// # use sonic_channel::*;
-        /// # fn main() -> result::Result<()> {
-        /// let ingest_channel = IngestChannel::start(
-        ///     "localhost:1491",
-        ///     "SecretPassword",
-        /// )?;
-        ///
-        /// let flushb_count = ingest_channel.flushb("search", "default")?;
+        /// let flushb_count = ingest_channel.flush(FlushRequest::bucket("search", "default"))?;
         /// dbg!(flushb_count);
-        /// # Ok(())
-        /// # }
-        /// ```
-        use FlushCommand for fn flushb<'a>(
-            collection: &'a str,
-            bucket: &'a str => Some(bucket),
-        );
-    );
-
-    init_command!(
-        /// Flush all indexed data from an object in a bucket in collection.
-        ///
-        /// Note: This method requires enabling the `ingest` feature and start
-        /// connection in Ingest mode.
-        ///
-        /// ```rust,no_run
-        /// # use sonic_channel::*;
-        /// # fn main() -> result::Result<()> {
-        /// let ingest_channel = IngestChannel::start(
-        ///     "localhost:1491",
-        ///     "SecretPassword",
+        /// let flusho_count = ingest_channel.flush(
+        ///     FlushRequest::object("search", "default", "recipe:295")
         /// )?;
-        ///
-        /// let flusho_count = ingest_channel.flusho("search", "default", "recipe:296")?;
         /// dbg!(flusho_count);
         /// # Ok(())
         /// # }
         /// ```
-        use FlushCommand for fn flusho<'a>(
-            collection: &'a str,
-            bucket: &'a str => Some(bucket),
-            object: &'a str => Some(object),
+        use FlushCommand for fn flush(
+            req: FlushRequest,
         );
     );
 

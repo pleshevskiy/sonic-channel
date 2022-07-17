@@ -5,8 +5,8 @@ use crate::result::*;
 
 #[derive(Debug)]
 pub struct StartCommand {
-    pub mode: ChannelMode,
-    pub password: String,
+    pub(crate) mode: ChannelMode,
+    pub(crate) password: String,
 }
 
 #[derive(Debug)]

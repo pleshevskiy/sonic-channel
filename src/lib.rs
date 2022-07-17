@@ -17,7 +17,11 @@
 //!         "SecretPassword",
 //!     )?;
 //!
-//!     let objects = channel.query("collection", "bucket", "recipe")?;
+//!     let objects = channel.query(QueryRequest {
+//!         dest: Dest::col_buc("collection", "bucket"),
+//!         terms: "recipe",
+//!         lang: None,
+//!     })?;
 //!     dbg!(objects);
 //!
 //!     Ok(())
@@ -37,9 +41,17 @@
 //!         "SecretPassword",
 //!     )?;
 //!
-//!     let pushed = channel.push("collection", "bucket", "object:1", "my best recipe")?;
+//!     let pushed = channel.push(PushRequest {
+//!         dest: Dest::col_buc("collection", "bucket").obj("object:1"),
+//!         text: "my best recipe",
+//!         lang: None, // <<< auto detect
+//!     })?;
 //!     // or
-//!     // let pushed = channel.push_with_locale("collection", "bucket", "object:1", "Мой лучший рецепт", "rus")?;
+//!     // let pushed = channel.push(PushRequest {
+//!     //     dest: Dest::col_buc("collection", "bucket").obj("object:1"),
+//!     //     text: "Мой лучший рецепт",
+//!     //     lang: Some(Lang::Rus)
+//!     // })?;
 //!     dbg!(pushed);
 //!
 //!     Ok(())
@@ -88,12 +100,18 @@ compile_error!(
 #[macro_use]
 mod macroses;
 
+pub(crate) mod protocol;
+
 mod channels;
 mod commands;
 
-pub mod misc;
-pub(crate) mod protocol;
+mod misc;
+
 /// Contains sonic channel error type and custom Result type for easy configure your functions.
 pub mod result;
 
 pub use channels::*;
+pub use commands::*;
+pub use misc::*;
+
+pub use whatlang::Lang;

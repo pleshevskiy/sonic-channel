@@ -6,14 +6,17 @@ impl ObjDest {
         Self(cb, o.to_string())
     }
 
+    #[inline]
     pub fn collection(&self) -> &String {
-        &self.0.collection()
+        self.0.collection()
     }
 
-    pub fn bucket(&self) -> Option<&String> {
-        self.0.bucket()
+    #[inline]
+    pub fn bucket_opt(&self) -> Option<&String> {
+        self.0.bucket_opt()
     }
 
+    #[inline]
     pub fn object(&self) -> &String {
         &self.1
     }
@@ -46,11 +49,46 @@ impl Dest {
         ObjDest::new(self, o)
     }
 
+    #[inline]
     pub fn collection(&self) -> &String {
         &self.collection
     }
 
-    pub fn bucket(&self) -> Option<&String> {
+    #[inline]
+    pub fn bucket_opt(&self) -> Option<&String> {
         self.bucket.as_ref()
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct OptDest {
+    pub(crate) collection: String,
+    pub(crate) bucket: Option<String>,
+    pub(crate) object: Option<String>,
+}
+
+impl OptDest {
+    pub(crate) fn col(c: impl ToString) -> Self {
+        Self {
+            collection: c.to_string(),
+            bucket: None,
+            object: None,
+        }
+    }
+
+    pub(crate) fn col_buc(c: impl ToString, b: impl ToString) -> Self {
+        Self {
+            collection: c.to_string(),
+            bucket: Some(b.to_string()),
+            object: None,
+        }
+    }
+
+    pub(crate) fn col_buc_obj(c: impl ToString, b: impl ToString, o: impl ToString) -> Self {
+        Self {
+            collection: c.to_string(),
+            bucket: Some(b.to_string()),
+            object: Some(o.to_string()),
+        }
     }
 }

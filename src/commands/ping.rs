@@ -2,7 +2,7 @@ use super::StreamCommand;
 use crate::protocol;
 use crate::result::*;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct PingCommand;
 
 impl StreamCommand for PingCommand {

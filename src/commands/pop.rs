@@ -1,24 +1,33 @@
 use super::StreamCommand;
+use crate::misc::ObjDest;
 use crate::protocol;
 use crate::result::*;
 
-#[derive(Debug, Default)]
-pub struct PopCommand<'a> {
-    pub collection: &'a str,
-    pub bucket: &'a str,
-    pub object: &'a str,
+#[derive(Debug)]
+pub struct PopRequest<'a> {
+    pub dest: ObjDest,
     pub text: &'a str,
+}
+
+#[derive(Debug)]
+pub struct PopCommand<'a> {
+    pub(crate) req: PopRequest<'a>,
 }
 
 impl StreamCommand for PopCommand<'_> {
     type Response = usize;
 
     fn request(&self) -> protocol::Request {
+        let dest = &self.req.dest;
         protocol::Request::Pop {
-            collection: self.collection.to_string(),
-            bucket: self.bucket.to_string(),
-            object: self.object.to_string(),
-            terms: self.text.to_string(),
+            collection: dest.collection().clone(),
+            bucket: dest
+                .bucket_opt()
+                .cloned()
+                // TODO: use a global context for default bucket value
+                .unwrap_or_else(|| String::from("default")),
+            object: dest.object().clone(),
+            terms: self.req.text.to_string(),
         }
     }
 

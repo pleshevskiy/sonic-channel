@@ -12,14 +12,14 @@ pub struct PushRequest<'a> {
 
 #[derive(Debug)]
 pub struct PushCommand<'a> {
-    pub req: PushRequest<'a>,
+    pub(crate) req: PushRequest<'a>,
 }
 
 impl StreamCommand for PushCommand<'_> {
     type Response = ();
 
     fn request(&self) -> protocol::Request {
-        let req = self.req;
+        let req = &self.req;
 
         let lang = req
             .lang
@@ -29,14 +29,14 @@ impl StreamCommand for PushCommand<'_> {
             .map(|l| l.code());
 
         protocol::Request::Push {
-            collection: *req.dest.collection(),
+            collection: req.dest.collection().clone(),
             bucket: req
                 .dest
-                .bucket()
+                .bucket_opt()
                 .cloned()
                 // TODO: use a global context for default bucket value
                 .unwrap_or_else(|| String::from("default")),
-            object: *req.dest.object(),
+            object: req.dest.object().clone(),
             terms: req.text.to_string(),
             lang,
         }

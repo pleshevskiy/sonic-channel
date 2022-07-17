@@ -28,7 +28,8 @@ const UNINITIALIZED_MODE_MAX_BUFFER_SIZE: usize = 200;
 pub enum ChannelMode {
     /// Sonic server search channel mode.
     ///
-    /// In this mode you can use `query`, `suggest`, `ping` and `quit` commands.
+    /// In this mode you can use `query`, `pag_query`, `suggest`, `lim_suggest`, `ping`
+    /// and `quit` commands.
     ///
     /// Note: This mode requires enabling the `search` feature.
     #[cfg(feature = "search")]
@@ -36,8 +37,7 @@ pub enum ChannelMode {
 
     /// Sonic server ingest channel mode.
     ///
-    /// In this mode you can use `push`, `pop`, `flushc`, `flushb`, `flusho`,
-    /// `bucket_count`, `object_count`, `word_count`, `ping` and `quit` commands.
+    /// In this mode you can use `push`, `pop`, `flush`, `count` `ping` and `quit` commands.
     ///
     /// Note: This mode requires enabling the `ingest` feature.
     #[cfg(feature = "ingest")]
@@ -45,7 +45,7 @@ pub enum ChannelMode {
 
     /// Sonic server control channel mode.
     ///
-    /// In this mode you can use `consolidate`, `backup`, `restore`,
+    /// In this mode you can use `trigger`, `consolidate`, `backup`, `restore`,
     /// `ping` and `quit` commands.
     ///
     /// Note: This mode requires enabling the `control` feature.
@@ -167,22 +167,6 @@ impl SonicStream {
     ///
     /// I think we shouldn't separate commands connect and start because we haven't
     /// possibility to change channel in sonic server, if we already chosen one of them. 🤔
-    ///
-    /// ```rust,no_run
-    /// use sonic_channel::*;
-    ///
-    /// fn main() -> result::Result<()> {
-    ///     let channel = SearchChannel::start(
-    ///         "localhost:1491",
-    ///         "SecretPassword"
-    ///     )?;
-    ///
-    ///     // Now you can use all method of Search channel.
-    ///     let objects = channel.query("search", "default", "beef");
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
     pub(crate) fn connect_with_start<A, S>(mode: ChannelMode, addr: A, password: S) -> Result<Self>
     where
         A: ToSocketAddrs,
