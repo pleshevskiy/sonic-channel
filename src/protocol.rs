@@ -34,16 +34,11 @@ impl Protocol {
             },
 
             #[rustfmt::skip]
-            Request::Flush(flush_cmd) => match flush_cmd {
-                FlushRequest::Object { collection, bucket, object } => {
-                    write!(res, "FLUSHO {} {} {}", collection, bucket, object)?
-                }
-                FlushRequest::Bucket { collection, bucket } => {
-                    write!(res, "FLUSHB {} {}", collection, bucket)?
-                }
-                FlushRequest::Collection(collection) => {
-                    write!(res, "FLUSHC {}", collection)?
-                }
+            Request::Flush { collection, bucket, object } => match (bucket, object) {
+                (Some(b), Some(o)) => write!(res, "FLUSHO {} {} {}", collection, b, o)?,
+                (Some(b), None) => write!(res, "FLUSHB {} {}", collection, b)?,
+                (None, None) => write!(res, "FLUSHC {}", collection)?,
+                _ => panic!("Wrong protocol format"),
             },
 
             #[rustfmt::skip]
@@ -248,7 +243,11 @@ pub enum Request {
         object: String,
         terms: String,
     },
-    Flush(FlushRequest),
+    Flush {
+        collection: String,
+        bucket: Option<String>,
+        object: Option<String>,
+    },
     Count {
         collection: String,
         bucket: Option<String>,
@@ -261,20 +260,6 @@ pub enum TriggerRequest {
     Consolidate,
     Backup(PathBuf),
     Restore(PathBuf),
-}
-
-#[derive(Debug)]
-pub enum FlushRequest {
-    Collection(String),
-    Bucket {
-        collection: String,
-        bucket: String,
-    },
-    Object {
-        collection: String,
-        bucket: String,
-        object: String,
-    },
 }
 
 //===========================================================================//
