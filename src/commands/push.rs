@@ -1,27 +1,43 @@
 use super::StreamCommand;
+use crate::misc::ObjDest;
 use crate::protocol;
 use crate::result::*;
 
-#[derive(Debug, Default)]
-pub struct PushCommand<'a> {
-    pub collection: &'a str,
-    pub bucket: &'a str,
-    pub object: &'a str,
+#[derive(Debug)]
+pub struct PushRequest<'a> {
+    pub dest: ObjDest,
     pub text: &'a str,
-    pub locale: Option<&'a str>,
+    pub lang: Option<whatlang::Lang>,
+}
+
+#[derive(Debug)]
+pub struct PushCommand<'a> {
+    pub req: PushRequest<'a>,
 }
 
 impl StreamCommand for PushCommand<'_> {
     type Response = ();
 
     fn request(&self) -> protocol::Request {
-        let lang = whatlang::detect(self.text)
-            .and_then(|i| (i.confidence() == 1.0).then(|| i.lang().code()));
+        let req = self.req;
+
+        let lang = req
+            .lang
+            .or_else(|| {
+                whatlang::detect(req.text).and_then(|i| (i.confidence() == 1.0).then(|| i.lang()))
+            })
+            .map(|l| l.code());
+
         protocol::Request::Push {
-            collection: self.collection.to_string(),
-            bucket: self.bucket.to_string(),
-            object: self.object.to_string(),
-            terms: self.text.to_string(),
+            collection: *req.dest.collection(),
+            bucket: req
+                .dest
+                .bucket()
+                .cloned()
+                // TODO: use a global context for default bucket value
+                .unwrap_or_else(|| String::from("default")),
+            object: *req.dest.object(),
+            terms: req.text.to_string(),
             lang,
         }
     }

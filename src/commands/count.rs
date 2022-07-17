@@ -1,22 +1,55 @@
 use super::StreamCommand;
+use crate::misc::Dest;
 use crate::protocol;
 use crate::result::*;
 
-#[derive(Debug, Default)]
-pub struct CountCommand<'a> {
-    pub collection: &'a str,
-    pub bucket: Option<&'a str>,
-    pub object: Option<&'a str>,
+#[derive(Debug)]
+pub struct CountRequest {
+    pub dest: Dest,
+    pub obj: Option<String>,
 }
 
-impl StreamCommand for CountCommand<'_> {
+impl CountRequest {
+    pub fn buckets(collection: impl ToString) -> CountRequest {
+        Self {
+            dest: Dest::col(collection),
+            obj: None,
+        }
+    }
+
+    pub fn objects(collection: impl ToString, bucket: impl ToString) -> CountRequest {
+        Self {
+            dest: Dest::col_buc(collection, bucket),
+            obj: None,
+        }
+    }
+
+    pub fn words(
+        collection: impl ToString,
+        bucket: impl ToString,
+        object: impl ToString,
+    ) -> CountRequest {
+        Self {
+            dest: Dest::col_buc(collection, bucket),
+            obj: Some(object.to_string()),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct CountCommand {
+    pub req: CountRequest,
+}
+
+impl StreamCommand for CountCommand {
     type Response = usize;
 
     fn request(&self) -> protocol::Request {
+        let req = self.req;
         protocol::Request::Count {
-            collection: self.collection.to_string(),
-            bucket: self.bucket.map(String::from),
-            object: self.object.map(String::from),
+            collection: *req.dest.collection(),
+            bucket: req.dest.bucket().cloned(),
+            object: req.obj,
         }
     }
 

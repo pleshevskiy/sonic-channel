@@ -91,6 +91,7 @@ mod macroses;
 mod channels;
 mod commands;
 
+pub mod misc;
 pub(crate) mod protocol;
 /// Contains sonic channel error type and custom Result type for easy configure your functions.
 pub mod result;

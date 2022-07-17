@@ -20,27 +20,27 @@ mod suggest;
 #[cfg(feature = "control")]
 mod trigger;
 
-pub(crate) use quit::QuitCommand;
-pub(crate) use start::StartCommand;
+pub(crate) use quit::*;
+pub(crate) use start::*;
 
-pub(crate) use ping::PingCommand;
+pub(crate) use ping::*;
 
 #[cfg(feature = "ingest")]
-pub(crate) use count::CountCommand;
+pub(crate) use count::*;
 #[cfg(feature = "ingest")]
-pub(crate) use flush::FlushCommand;
+pub(crate) use flush::*;
 #[cfg(feature = "ingest")]
-pub(crate) use pop::PopCommand;
+pub(crate) use pop::*;
 #[cfg(feature = "ingest")]
-pub(crate) use push::PushCommand;
+pub(crate) use push::*;
 
 #[cfg(feature = "search")]
-pub(crate) use query::QueryCommand;
+pub(crate) use query::*;
 #[cfg(feature = "search")]
-pub(crate) use suggest::SuggestCommand;
+pub(crate) use suggest::*;
 
 #[cfg(feature = "control")]
-pub(crate) use trigger::{TriggerAction, TriggerCommand};
+pub(crate) use trigger::*;
 
 use crate::protocol;
 use crate::result::Result;
