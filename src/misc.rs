@@ -111,6 +111,7 @@ impl Dest {
     }
 }
 
+#[cfg(feature = "ingest")]
 #[derive(Debug)]
 pub(crate) struct OptDest {
     pub(crate) collection: String,
@@ -118,6 +119,7 @@ pub(crate) struct OptDest {
     pub(crate) object: Option<String>,
 }
 
+#[cfg(feature = "ingest")]
 impl OptDest {
     pub(crate) fn col(c: impl ToString) -> Self {
         Self {
@@ -144,6 +146,7 @@ impl OptDest {
     }
 }
 
+#[cfg(feature = "ingest")]
 impl From<Dest> for OptDest {
     fn from(d: Dest) -> Self {
         Self {
@@ -154,6 +157,7 @@ impl From<Dest> for OptDest {
     }
 }
 
+#[cfg(feature = "ingest")]
 impl From<ObjDest> for OptDest {
     fn from(ObjDest(dest, obj): ObjDest) -> Self {
         Self {

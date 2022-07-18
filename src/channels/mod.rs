@@ -210,8 +210,11 @@ mod tests {
 
     #[test]
     fn format_channel_enums() {
+        #[cfg(feature = "search")]
         assert_eq!(format!("{}", ChannelMode::Search), String::from("search"));
+        #[cfg(feature = "ingest")]
         assert_eq!(format!("{}", ChannelMode::Ingest), String::from("ingest"));
+        #[cfg(feature = "control")]
         assert_eq!(format!("{}", ChannelMode::Control), String::from("control"));
     }
 }
