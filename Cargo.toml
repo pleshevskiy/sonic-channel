@@ -15,8 +15,6 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# TODO(pleshevskiy): don't forget to remove before publishing
-env_logger = "0.9.0"
 log = "0.4.17"
 whatlang = "0.12.0"
 
