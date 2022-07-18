@@ -1,27 +1,17 @@
 use super::StreamCommand;
 use crate::channels::ChannelMode;
+use crate::protocol;
 use crate::result::*;
-use regex::Regex;
-
-const RE_START_RECEIVED_MESSAGE: &str = r"(?x)
-    STARTED 
-    \s # started with mode
-    (?P<mode>search|ingest|control) 
-    \s # wich protocol used
-    protocol\((?P<protocol>\d+)\) 
-    \s # maximum buffer size
-    buffer\((?P<buffer_size>\d+)\)
-";
 
 #[derive(Debug)]
 pub struct StartCommand {
-    pub mode: ChannelMode,
-    pub password: String,
+    pub(crate) mode: ChannelMode,
+    pub(crate) password: String,
 }
 
 #[derive(Debug)]
 pub struct StartCommandResponse {
-    pub protocol_version: usize,
+    pub protocol_version: protocol::Version,
     pub max_buffer_size: usize,
     pub mode: ChannelMode,
 }
@@ -29,32 +19,26 @@ pub struct StartCommandResponse {
 impl StreamCommand for StartCommand {
     type Response = StartCommandResponse;
 
-    fn message(&self) -> String {
-        format!("START {} {}\r\n", self.mode, self.password)
+    fn request(&self) -> protocol::Request {
+        protocol::Request::Start {
+            mode: self.mode,
+            password: self.password.to_string(),
+        }
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(RE_START_RECEIVED_MESSAGE).unwrap();
-        }
-
-        if let Some(caps) = RE.captures(&message) {
-            if self.mode.as_str() != &caps["mode"] {
-                Err(Error::new(ErrorKind::SwitchMode))
-            } else {
-                let protocol_version: usize =
-                    caps["protocol"].parse().expect("Must be digit by regex");
-                let max_buffer_size: usize =
-                    caps["buffer_size"].parse().expect("Must be digit by regex");
-
-                Ok(StartCommandResponse {
-                    protocol_version,
-                    max_buffer_size,
-                    mode: self.mode,
-                })
-            }
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if let protocol::Response::Started(payload) = res {
+            Ok(StartCommandResponse {
+                protocol_version: payload
+                    .protocol_version
+                    .try_into()
+                    // TODO: better error
+                    .map_err(|_| Error::SwitchMode)?,
+                max_buffer_size: payload.max_buffer_size,
+                mode: self.mode,
+            })
         } else {
-            Err(Error::new(ErrorKind::SwitchMode))
+            Err(Error::SwitchMode)
         }
     }
 }

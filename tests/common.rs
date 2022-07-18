@@ -22,5 +22,7 @@ pub fn consolidate() {
 }
 
 pub fn flush_bucket(collection: &str, bucket: &str) {
-    ingest_start().flushb(collection, bucket).unwrap();
+    ingest_start()
+        .flush(FlushRequest::bucket(collection, bucket))
+        .unwrap();
 }

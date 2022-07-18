@@ -1,39 +1,68 @@
 use super::StreamCommand;
-use crate::result::{Error, ErrorKind, Result};
+use crate::misc::*;
+use crate::protocol;
+use crate::result::*;
 
-#[derive(Debug, Default)]
-pub struct FlushCommand<'a> {
-    pub collection: &'a str,
-    pub bucket: Option<&'a str>,
-    pub object: Option<&'a str>,
-}
+/// Parameters for the `flush` command.
+#[derive(Debug)]
+pub struct FlushRequest(OptDest);
 
-impl StreamCommand for FlushCommand<'_> {
-    type Response = usize;
-
-    fn message(&self) -> String {
-        let mut message = match (self.bucket, self.object) {
-            (Some(bucket), Some(object)) => {
-                format!("FLUSHO {} {} {}", self.collection, bucket, object)
-            }
-            (Some(bucket), None) => format!("FLUSHB {} {}", self.collection, bucket),
-            (None, None) => format!("FLUSHC {}", self.collection),
-            _ => panic!("Invalid flush command"),
-        };
-        message.push_str("\r\n");
-        message
+impl FlushRequest {
+    /// Creates a new request to flush all data in the collection.
+    pub fn collection(collection: impl ToString) -> FlushRequest {
+        Self(OptDest::col(collection))
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message.starts_with("RESULT ") {
-            let count = message.split_whitespace().last().unwrap_or_default();
-            count.parse().map_err(|_| {
-                Error::new(ErrorKind::QueryResponse(
-                    "Cannot parse count of flush method response to usize",
-                ))
-            })
+    /// Creates a new request to flush all data in the collection bucket.
+    pub fn bucket(collection: impl ToString, bucket: impl ToString) -> FlushRequest {
+        Self(OptDest::col_buc(collection, bucket))
+    }
+
+    /// Creates a new request to flush all data in the collection bucket object.
+    pub fn object(
+        collection: impl ToString,
+        bucket: impl ToString,
+        object: impl ToString,
+    ) -> FlushRequest {
+        Self(OptDest::col_buc_obj(collection, bucket, object))
+    }
+}
+
+impl From<Dest> for FlushRequest {
+    fn from(d: Dest) -> Self {
+        Self(OptDest::from(d))
+    }
+}
+
+impl From<ObjDest> for FlushRequest {
+    fn from(d: ObjDest) -> Self {
+        Self(OptDest::from(d))
+    }
+}
+
+#[derive(Debug)]
+pub struct FlushCommand {
+    pub(crate) req: FlushRequest,
+}
+
+impl StreamCommand for FlushCommand {
+    type Response = usize;
+
+    fn request(&self) -> protocol::Request {
+        let dest = &self.req.0;
+
+        protocol::Request::Flush {
+            collection: dest.collection.clone(),
+            bucket: dest.bucket.clone(),
+            object: dest.object.clone(),
+        }
+    }
+
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if let protocol::Response::Result(count) = res {
+            Ok(count)
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

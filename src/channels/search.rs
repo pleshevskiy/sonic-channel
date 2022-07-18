@@ -82,84 +82,22 @@ impl SearchChannel {
         ///     "SecretPassword",
         /// )?;
         ///
-        /// let result = search_channel.query("search", "default", "Beef")?;
-        /// dbg!(result);
-        /// # Ok(())
-        /// # }
-        /// ```
-        use QueryCommand for fn query<'a>(
-            collection: &'a str,
-            bucket: &'a str,
-            terms: &'a str,
-        );
-    );
-
-    init_command!(
-        /// Query limited objects in database. This method similar query but
-        /// you can configure limit of result.
-        ///
-        /// Note: This method requires enabling the `search` feature and start
-        /// connection in Search mode.
-        ///
-        /// ```rust,no_run
-        /// # use sonic_channel::*;
-        /// # fn main() -> result::Result<()> {
-        /// let search_channel = SearchChannel::start(
-        ///     "localhost:1491",
-        ///     "SecretPassword",
-        /// )?;
-        ///
-        /// let result = search_channel.query_with_limit(
-        ///     "search",
-        ///     "default",
+        /// let result = search_channel.query(QueryRequest::new(
+        ///     Dest::col("search"),
         ///     "Beef",
-        ///     10,
+        /// ))?;
+        /// dbg!(result);
+        ///
+        /// let result = search_channel.query(
+        ///     QueryRequest::new(Dest::col("search"), "Beef").limit(10)
         /// )?;
         /// dbg!(result);
         /// # Ok(())
         /// # }
         /// ```
-        use QueryCommand for fn query_with_limit<'a>(
-            collection: &'a str,
-            bucket: &'a str,
-            terms: &'a str,
-            limit: usize => Some(limit),
+        use QueryCommand for fn query(
+            req: QueryRequest,
         );
-    );
-
-    init_command!(
-        /// Query limited objects in database. This method similar
-        /// query_with_limit but you can put offset in your query.
-        ///
-        /// Note: This method requires enabling the `search` feature and start
-        /// connection in Search mode.
-        ///
-        /// ```rust,no_run
-        /// # use sonic_channel::*;
-        /// # fn main() -> result::Result<()> {
-        /// let search_channel = SearchChannel::start(
-        ///     "localhost:1491",
-        ///     "SecretPassword",
-        /// )?;
-        ///
-        /// let result = search_channel.query_with_limit_and_offset(
-        ///     "search",
-        ///     "default",
-        ///     "Beef",
-        ///     10,
-        ///     10,
-        /// )?;
-        /// dbg!(result);
-        /// # Ok(())
-        /// # }
-        /// ```
-        use QueryCommand for fn query_with_limit_and_offset<'a>(
-            collection: &'a str,
-            bucket: &'a str,
-            terms: &'a str,
-            limit: usize => Some(limit),
-            offset: usize => Some(offset),
-        )
     );
 
     init_command!(
@@ -176,42 +114,20 @@ impl SearchChannel {
         ///     "SecretPassword",
         /// )?;
         ///
-        /// let result = search_channel.suggest("search", "default", "Beef")?;
-        /// dbg!(result);
-        /// # Ok(())
-        /// # }
-        /// ```
-        use SuggestCommand for fn suggest<'a>(
-            collection: &'a str,
-            bucket: &'a str,
-            word: &'a str,
-        );
-    );
-
-    init_command!(
-        /// Suggest auto-completes words with limit.
-        ///
-        /// Note: This method requires enabling the `search` feature and start
-        /// connection in Search mode.
-        ///
-        /// ```rust,no_run
-        /// # use sonic_channel::*;
-        /// # fn main() -> result::Result<()> {
-        /// let search_channel = SearchChannel::start(
-        ///     "localhost:1491",
-        ///     "SecretPassword",
+        /// let result = search_channel.suggest(
+        ///     SuggestRequest::new(Dest::col("search"), "Beef")
         /// )?;
+        /// dbg!(result);
         ///
-        /// let result = search_channel.suggest_with_limit("search", "default", "Beef", 5)?;
+        /// let result = search_channel.suggest(
+        ///     SuggestRequest::new(Dest::col("search"), "Beef").limit(2)
+        /// )?;
         /// dbg!(result);
         /// # Ok(())
         /// # }
         /// ```
-        use SuggestCommand for fn suggest_with_limit<'a>(
-            collection: &'a str,
-            bucket: &'a str,
-            word: &'a str,
-            limit: usize => Some(limit),
+        use SuggestCommand for fn suggest(
+            req: SuggestRequest,
         );
     );
 }

@@ -1,21 +1,22 @@
 use super::StreamCommand;
+use crate::protocol;
 use crate::result::*;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct QuitCommand;
 
 impl StreamCommand for QuitCommand {
-    type Response = bool;
+    type Response = ();
 
-    fn message(&self) -> String {
-        String::from("QUIT\r\n")
+    fn request(&self) -> protocol::Request {
+        protocol::Request::Quit
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message.starts_with("ENDED ") {
-            Ok(true)
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if matches!(res, protocol::Response::Ended) {
+            Ok(())
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

@@ -14,8 +14,7 @@ macro_rules! init_command {
         ) -> $crate::result::Result<
             <$cmd_name as $crate::commands::StreamCommand>::Response,
         > {
-            #[allow(clippy::needless_update)]
-            let command = $cmd_name { $($arg_name $(: $arg_value)?,)* ..Default::default() };
+            let command = $cmd_name { $($arg_name $(: $arg_value)?,)* };
             self.stream().run_command(command)
         }
     };

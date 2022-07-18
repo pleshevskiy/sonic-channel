@@ -1,36 +1,54 @@
 use super::StreamCommand;
+use crate::misc::ObjDest;
+use crate::protocol;
 use crate::result::*;
 
-#[derive(Debug, Default)]
-pub struct PopCommand<'a> {
-    pub collection: &'a str,
-    pub bucket: &'a str,
-    pub object: &'a str,
-    pub text: &'a str,
+/// Parameters for the `pop` command.
+#[derive(Debug)]
+pub struct PopRequest {
+    /// Collection, bucket and object where we should pop search data from index.
+    pub dest: ObjDest,
+    /// Search data to be deleted
+    pub text: String,
 }
 
-impl StreamCommand for PopCommand<'_> {
+impl PopRequest {
+    /// Creates a base pop request.
+    pub fn new(dest: ObjDest, text: impl ToString) -> Self {
+        Self {
+            dest,
+            text: text.to_string(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct PopCommand {
+    pub(crate) req: PopRequest,
+}
+
+impl StreamCommand for PopCommand {
     type Response = usize;
 
-    fn message(&self) -> String {
-        let mut message = format!(
-            r#"POP {} {} {} "{}""#,
-            self.collection, self.bucket, self.object, self.text
-        );
-        message.push_str("\r\n");
-        message
+    fn request(&self) -> protocol::Request {
+        let dest = &self.req.dest;
+        protocol::Request::Pop {
+            collection: dest.collection().clone(),
+            bucket: dest
+                .bucket_opt()
+                .cloned()
+                // TODO: use a global context for default bucket value
+                .unwrap_or_else(|| String::from("default")),
+            object: dest.object().clone(),
+            terms: self.req.text.to_string(),
+        }
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message.starts_with("RESULT ") {
-            let count = message.split_whitespace().last().unwrap_or_default();
-            count.parse().map_err(|_| {
-                Error::new(ErrorKind::QueryResponse(
-                    "Cannot parse count of pop method response to usize",
-                ))
-            })
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if let protocol::Response::Result(count) = res {
+            Ok(count)
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

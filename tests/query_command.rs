@@ -8,35 +8,19 @@ fn should_find_object_by_exact_match() {
     let bucket = "query_by_exact_match";
     let title = "Sweet Teriyaki Beef Skewers";
 
-    let ingest_channel = ingest_start();
-    ingest_channel.push(COLLECTION, bucket, "1", title).unwrap();
-
-    let search_channel = search_start();
-    match search_channel.query(COLLECTION, bucket, title) {
-        Ok(object_ids) => assert_eq!(object_ids, vec!["1"]),
-        Err(_) => unreachable!(),
-    }
-
-    flush_bucket(COLLECTION, bucket);
-}
-
-#[test]
-fn should_find_object_by_partial_match() {
-    let bucket = "query_by_partial_match";
+    let dest = Dest::col_buc(COLLECTION, bucket);
 
     let ingest_channel = ingest_start();
     ingest_channel
-        .push(COLLECTION, bucket, "1", "Sweet Teriyaki Beef Skewers")
+        .push(PushRequest::new(dest.clone().obj("1"), title))
         .unwrap();
 
-    let search_channel = search_start();
+    consolidate();
 
-    let words = ["Sweet", "Teriyaki", "Beef", "Skewers"];
-    for word in words {
-        match search_channel.query(COLLECTION, bucket, word) {
-            Ok(object_ids) => assert_eq!(object_ids, vec!["1"]),
-            Err(_) => unreachable!(),
-        }
+    let search_channel = search_start();
+    match search_channel.query(QueryRequest::new(dest, title)) {
+        Ok(object_ids) => assert_eq!(object_ids, vec![String::from("1")]),
+        Err(_) => unreachable!(),
     }
 
     flush_bucket(COLLECTION, bucket);
@@ -50,19 +34,22 @@ Sweet
 Teriyaki
 Beef
 Skewers
-";
+None";
+
+    let dest = Dest::col_buc(COLLECTION, bucket);
 
     let ingest_channel = ingest_start();
     ingest_channel
-        .push(COLLECTION, bucket, "1", multiline_text)
+        .push(PushRequest::new(dest.clone().obj("1"), multiline_text))
         .unwrap();
 
-    let search_channel = search_start();
+    consolidate();
 
     let words = ["Sweet", "Teriyaki", "Beef", "Skewers"];
+    let search_channel = search_start();
     for word in words {
-        match search_channel.query(COLLECTION, bucket, word) {
-            Ok(object_ids) => assert_eq!(object_ids, vec!["1"]),
+        match search_channel.query(QueryRequest::new(dest.clone(), word)) {
+            Ok(object_ids) => assert_eq!(object_ids, vec![String::from("1")]),
             Err(_) => unreachable!(),
         }
     }
@@ -74,19 +61,32 @@ Skewers
 fn should_find_many_objects() {
     let bucket = "query_many_objects";
 
+    let dest = Dest::col_buc(COLLECTION, bucket);
+
     let ingest_channel = ingest_start();
     ingest_channel
-        .push(COLLECTION, bucket, "1", "Sweet Teriyaki Beef Skewers")
+        .push(PushRequest::new(
+            dest.clone().obj("1"),
+            "Sweet Teriyaki Beef Skewers",
+        ))
         .unwrap();
     ingest_channel
-        .push(COLLECTION, bucket, "2", "Slow Cooker Beef Stew I")
+        .push(PushRequest::new(
+            dest.clone().obj("2"),
+            "Slow Cooker Beef Stew I",
+        ))
         .unwrap();
     ingest_channel
-        .push(COLLECTION, bucket, "3", "Christmas Prime Rib")
+        .push(PushRequest::new(
+            dest.clone().obj("3"),
+            "Christmas Prime Rib",
+        ))
         .unwrap();
 
+    consolidate();
+
     let search_channel = search_start();
-    match search_channel.query(COLLECTION, bucket, "Beef") {
+    match search_channel.query(QueryRequest::new(dest, "Beef")) {
         Ok(object_ids) => assert_eq!(object_ids, vec!["2", "1"]),
         Err(_) => unreachable!(),
     }
@@ -98,25 +98,38 @@ fn should_find_many_objects() {
 fn should_find_limited_objects() {
     let bucket = "query_limited_objects";
 
+    let dest = Dest::col_buc(COLLECTION, bucket);
+
     let ingest_channel = ingest_start();
     ingest_channel
-        .push(COLLECTION, bucket, "1", "Sweet Teriyaki Beef Skewers")
+        .push(PushRequest::new(
+            dest.clone().obj("1"),
+            "Sweet Teriyaki Beef Skewers",
+        ))
         .unwrap();
     ingest_channel
-        .push(COLLECTION, bucket, "2", "Slow Cooker Beef Stew I")
+        .push(PushRequest::new(
+            dest.clone().obj("2"),
+            "Slow Cooker Beef Stew I",
+        ))
         .unwrap();
     ingest_channel
-        .push(COLLECTION, bucket, "3", "Christmas Prime Rib")
+        .push(PushRequest::new(
+            dest.clone().obj("3"),
+            "Christmas Prime Rib",
+        ))
         .unwrap();
 
+    consolidate();
+
     let search_channel = search_start();
-    match search_channel.query_with_limit(COLLECTION, bucket, "Beef", 1) {
+    match search_channel.query(QueryRequest::new(dest.clone(), "Beef").limit(1)) {
         Ok(object_ids) => assert_eq!(object_ids, vec!["2"]),
         Err(_) => unreachable!(),
     }
 
     let search_channel = search_start();
-    match search_channel.query_with_limit_and_offset(COLLECTION, bucket, "Beef", 1, 1) {
+    match search_channel.query(QueryRequest::new(dest, "Beef").pag(1, 1)) {
         Ok(object_ids) => assert_eq!(object_ids, vec!["1"]),
         Err(_) => unreachable!(),
     }

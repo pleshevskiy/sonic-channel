@@ -1,79 +1,73 @@
 use super::StreamCommand;
+use crate::misc::ObjDest;
+use crate::protocol;
 use crate::result::*;
 
-#[derive(Debug, Default)]
-pub struct PushCommand<'a> {
-    pub collection: &'a str,
-    pub bucket: &'a str,
-    pub object: &'a str,
-    pub text: &'a str,
-    pub locale: Option<&'a str>,
+/// Parameters for the `push` command.
+#[derive(Debug)]
+pub struct PushRequest {
+    /// Collection, bucket and object where we should push search data in the index.
+    pub dest: ObjDest,
+    /// Search data to be added
+    pub text: String,
+    /// Language of the search data. If None, the client will try to determine based on the `text`.
+    pub lang: Option<whatlang::Lang>,
 }
 
-impl StreamCommand for PushCommand<'_> {
-    type Response = bool;
+impl PushRequest {
+    /// Creates a base push request
+    pub fn new(dest: ObjDest, text: impl ToString) -> Self {
+        Self {
+            dest,
+            text: text.to_string(),
+            lang: None,
+        }
+    }
 
-    fn message(&self) -> String {
-        let mut message = format!(
-            r#"PUSH {} {} {} "{}""#,
-            self.collection,
-            self.bucket,
-            self.object,
-            remove_multiline(self.text)
-        );
+    /// Set a language for the request.
+    pub fn lang(mut self, lang: whatlang::Lang) -> Self {
+        self.lang = Some(lang);
+        self
+    }
+}
 
-        let locale = self.locale.or_else(|| {
-            whatlang::detect(self.text).and_then(|info| {
-                if info.confidence() == 1.0 {
-                    Some(info.lang().code())
-                } else {
-                    None
-                }
+#[derive(Debug)]
+pub struct PushCommand {
+    pub(crate) req: PushRequest,
+}
+
+impl StreamCommand for PushCommand {
+    type Response = ();
+
+    fn request(&self) -> protocol::Request {
+        let req = &self.req;
+
+        let lang = req
+            .lang
+            .or_else(|| {
+                whatlang::detect(&req.text).and_then(|i| (i.confidence() == 1.0).then(|| i.lang()))
             })
-        });
+            .map(|l| l.code());
 
-        if let Some(locale) = locale {
-            message.push_str(&format!(" LANG({})", locale));
+        protocol::Request::Push {
+            collection: req.dest.collection().clone(),
+            bucket: req
+                .dest
+                .bucket_opt()
+                .cloned()
+                // TODO: use a global context for default bucket value
+                .unwrap_or_else(|| String::from("default")),
+            object: req.dest.object().clone(),
+            terms: req.text.to_string(),
+            lang,
         }
-
-        message.push_str("\r\n");
-        message
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message == "OK\r\n" {
-            Ok(true)
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if matches!(res, protocol::Response::Ok) {
+            Ok(())
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
-    }
-}
-
-fn remove_multiline(text: &str) -> String {
-    text.lines()
-        .enumerate()
-        .fold(String::new(), |mut acc, (i, line)| {
-            if i != 0 && !line.is_empty() && !acc.is_empty() && !acc.ends_with(' ') {
-                acc.push(' ');
-            }
-
-            acc.push_str(line);
-            acc
-        })
-}
-
-#[cfg(test)]
-mod tests {
-    use super::remove_multiline;
-
-    #[test]
-    fn should_make_single_line() {
-        let text = "
-Hello
-World
-";
-
-        let expected_text = "Hello World";
-        assert_eq!(remove_multiline(text), expected_text);
     }
 }

@@ -1,39 +1,67 @@
 use super::StreamCommand;
+use crate::misc::*;
+use crate::protocol;
 use crate::result::*;
 
-#[derive(Debug, Default)]
-pub struct CountCommand<'a> {
-    pub collection: &'a str,
-    pub bucket: Option<&'a str>,
-    pub object: Option<&'a str>,
-}
+/// Parameters for the `count` command.
+#[derive(Debug)]
+pub struct CountRequest(OptDest);
 
-impl StreamCommand for CountCommand<'_> {
-    type Response = usize;
-
-    fn message(&self) -> String {
-        let mut message = format!("COUNT {}", self.collection);
-        if let Some(bucket) = self.bucket {
-            message.push_str(&format!(" {}", bucket));
-
-            if let Some(object) = self.object {
-                message.push_str(&format!(" {}", object));
-            }
-        }
-        message.push_str("\r\n");
-        message
+impl CountRequest {
+    /// Creates a new request to get the number of buckets in the collection.
+    pub fn buckets(collection: impl ToString) -> CountRequest {
+        Self(OptDest::col(collection))
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message.starts_with("RESULT ") {
-            let count = message.split_whitespace().last().unwrap_or_default();
-            count.parse().map_err(|_| {
-                Error::new(ErrorKind::QueryResponse(
-                    "Cannot parse count of count method response to usize",
-                ))
-            })
+    /// Creates a new request to get the number of objects in the collection bucket.
+    pub fn objects(collection: impl ToString, bucket: impl ToString) -> CountRequest {
+        Self(OptDest::col_buc(collection, bucket))
+    }
+
+    /// Creates a new request to get the number of words in the collection bucket object.
+    pub fn words(
+        collection: impl ToString,
+        bucket: impl ToString,
+        object: impl ToString,
+    ) -> CountRequest {
+        Self(OptDest::col_buc_obj(collection, bucket, object))
+    }
+}
+
+impl From<Dest> for CountRequest {
+    fn from(d: Dest) -> Self {
+        Self(OptDest::from(d))
+    }
+}
+
+impl From<ObjDest> for CountRequest {
+    fn from(d: ObjDest) -> Self {
+        Self(OptDest::from(d))
+    }
+}
+
+#[derive(Debug)]
+pub struct CountCommand {
+    pub(crate) req: CountRequest,
+}
+
+impl StreamCommand for CountCommand {
+    type Response = usize;
+
+    fn request(&self) -> protocol::Request {
+        let dest = &self.req.0;
+        protocol::Request::Count {
+            collection: dest.collection.clone(),
+            bucket: dest.bucket.clone(),
+            object: dest.object.clone(),
+        }
+    }
+
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if let protocol::Response::Result(count) = res {
+            Ok(count)
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

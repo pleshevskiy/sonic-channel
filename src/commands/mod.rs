@@ -1,7 +1,6 @@
+mod ping;
 mod quit;
 mod start;
-
-mod ping;
 
 #[cfg(feature = "ingest")]
 mod count;
@@ -20,36 +19,33 @@ mod suggest;
 #[cfg(feature = "control")]
 mod trigger;
 
-pub(crate) use quit::QuitCommand;
-pub(crate) use start::StartCommand;
-
-pub(crate) use ping::PingCommand;
+pub(crate) use self::{ping::PingCommand, quit::QuitCommand, start::StartCommand};
 
 #[cfg(feature = "ingest")]
-pub(crate) use count::CountCommand;
+pub(crate) use self::{
+    count::CountCommand, flush::FlushCommand, pop::PopCommand, push::PushCommand,
+};
 #[cfg(feature = "ingest")]
-pub(crate) use flush::FlushCommand;
-#[cfg(feature = "ingest")]
-pub(crate) use pop::PopCommand;
-#[cfg(feature = "ingest")]
-pub(crate) use push::PushCommand;
+pub use self::{count::CountRequest, flush::FlushRequest, pop::PopRequest, push::PushRequest};
 
 #[cfg(feature = "search")]
-pub(crate) use query::QueryCommand;
+pub(crate) use self::{query::QueryCommand, suggest::SuggestCommand};
 #[cfg(feature = "search")]
-pub(crate) use suggest::SuggestCommand;
+pub use self::{query::QueryRequest, suggest::SuggestRequest};
 
 #[cfg(feature = "control")]
-pub(crate) use trigger::{TriggerAction, TriggerCommand};
+pub(crate) use trigger::TriggerCommand;
+#[cfg(feature = "control")]
+pub use trigger::TriggerRequest;
 
+use crate::protocol;
 use crate::result::Result;
 
+#[doc(hidden)]
 pub trait StreamCommand {
     type Response;
 
-    const READ_LINES_COUNT: usize = 1;
+    fn request(&self) -> protocol::Request;
 
-    fn message(&self) -> String;
-
-    fn receive(&self, message: String) -> Result<Self::Response>;
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response>;
 }

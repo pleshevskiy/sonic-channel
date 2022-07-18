@@ -1,58 +1,63 @@
 use super::StreamCommand;
+use crate::misc::Dest;
+use crate::protocol;
 use crate::result::*;
-use regex::Regex;
 
-const RE_SUGGEST_RECEIVED_MESSAGE: &str = r"(?x)
-    ^PENDING\s(?P<pending_suggest_id>\w+)\r\n
-    EVENT\sSUGGEST\s(?P<event_suggest_id>\w+)\s(?P<words>.*?)\r\n$
-";
-
-#[derive(Debug, Default)]
-pub struct SuggestCommand<'a> {
-    pub collection: &'a str,
-    pub bucket: &'a str,
-    pub word: &'a str,
+/// Parameters for the `suggest` command.
+#[derive(Debug)]
+pub struct SuggestRequest {
+    /// Collection and bucket where we should search for suggested words.
+    pub dest: Dest,
+    /// Base word.
+    pub word: String,
+    /// Limit of result words.
     pub limit: Option<usize>,
 }
 
-impl StreamCommand for SuggestCommand<'_> {
-    type Response = Vec<String>;
-
-    const READ_LINES_COUNT: usize = 2;
-
-    fn message(&self) -> String {
-        let mut message = format!(
-            r#"SUGGEST {} {} "{}""#,
-            self.collection, self.bucket, self.word
-        );
-        if let Some(limit) = self.limit.as_ref() {
-            message.push_str(&format!(" LIMIT({})", limit));
+impl SuggestRequest {
+    /// Creates a base suggest request.
+    pub fn new(dest: Dest, word: impl ToString) -> Self {
+        Self {
+            dest,
+            word: word.to_string(),
+            limit: None,
         }
-        message.push_str("\r\n");
-        message
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(RE_SUGGEST_RECEIVED_MESSAGE).unwrap();
-        }
+    /// Set a limit for the request.
+    pub fn limit(mut self, limit: usize) -> Self {
+        self.limit = Some(limit);
+        self
+    }
+}
 
-        match RE.captures(&message) {
-            None => Err(Error::new(ErrorKind::WrongResponse)),
-            Some(caps) => {
-                if caps["pending_suggest_id"] != caps["event_suggest_id"] {
-                    Err(Error::new(ErrorKind::QueryResponse(
-                        "Pending id and event id don't match",
-                    )))
-                } else if caps["words"].is_empty() {
-                    Ok(vec![])
-                } else {
-                    Ok(caps["words"]
-                        .split_whitespace()
-                        .map(str::to_owned)
-                        .collect())
-                }
-            }
+#[derive(Debug)]
+pub struct SuggestCommand {
+    pub(crate) req: SuggestRequest,
+}
+
+impl StreamCommand for SuggestCommand {
+    type Response = Vec<String>;
+
+    fn request(&self) -> protocol::Request {
+        let dest = &self.req.dest;
+
+        protocol::Request::Suggest {
+            collection: dest.collection().clone(),
+            bucket: dest
+                .bucket_opt()
+                .cloned()
+                .unwrap_or_else(|| String::from("default")),
+            word: self.req.word.to_string(),
+            limit: self.req.limit,
+        }
+    }
+
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if let protocol::Response::Event(protocol::EventKind::Suggest, _id, words) = res {
+            Ok(words)
+        } else {
+            Err(Error::WrongResponse)
         }
     }
 }

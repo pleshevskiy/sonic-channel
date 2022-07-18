@@ -1,7 +1,6 @@
 #[cfg(feature = "search")]
 mod search;
 #[cfg(feature = "search")]
-use crate::commands::StartCommand;
 pub use search::*;
 
 #[cfg(feature = "ingest")]
@@ -14,13 +13,14 @@ mod control;
 #[cfg(feature = "control")]
 pub use control::*;
 
-use crate::commands::StreamCommand;
-use crate::result::*;
-use std::fmt;
-use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::cell::RefCell;
+use std::io::{BufRead, BufReader, Write};
 use std::net::{TcpStream, ToSocketAddrs};
 
-const DEFAULT_SONIC_PROTOCOL_VERSION: usize = 1;
+use crate::commands::{StartCommand, StreamCommand};
+use crate::protocol::{self, Protocol};
+use crate::result::*;
+
 const UNINITIALIZED_MODE_MAX_BUFFER_SIZE: usize = 200;
 
 /// Channel modes supported by sonic search backend.
@@ -28,7 +28,8 @@ const UNINITIALIZED_MODE_MAX_BUFFER_SIZE: usize = 200;
 pub enum ChannelMode {
     /// Sonic server search channel mode.
     ///
-    /// In this mode you can use `query`, `suggest`, `ping` and `quit` commands.
+    /// In this mode you can use `query`, `pag_query`, `suggest`, `lim_suggest`, `ping`
+    /// and `quit` commands.
     ///
     /// Note: This mode requires enabling the `search` feature.
     #[cfg(feature = "search")]
@@ -36,8 +37,7 @@ pub enum ChannelMode {
 
     /// Sonic server ingest channel mode.
     ///
-    /// In this mode you can use `push`, `pop`, `flushc`, `flushb`, `flusho`,
-    /// `bucket_count`, `object_count`, `word_count`, `ping` and `quit` commands.
+    /// In this mode you can use `push`, `pop`, `flush`, `count` `ping` and `quit` commands.
     ///
     /// Note: This mode requires enabling the `ingest` feature.
     #[cfg(feature = "ingest")]
@@ -45,7 +45,7 @@ pub enum ChannelMode {
 
     /// Sonic server control channel mode.
     ///
-    /// In this mode you can use `consolidate`, `backup`, `restore`,
+    /// In this mode you can use `trigger`, `consolidate`, `backup`, `restore`,
     /// `ping` and `quit` commands.
     ///
     /// Note: This mode requires enabling the `control` feature.
@@ -69,8 +69,8 @@ impl ChannelMode {
     }
 }
 
-impl fmt::Display for ChannelMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+impl std::fmt::Display for ChannelMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.as_str())
     }
 }
@@ -81,84 +81,84 @@ impl fmt::Display for ChannelMode {
 ///
 #[derive(Debug)]
 pub struct SonicStream {
-    stream: TcpStream,
+    stream: RefCell<TcpStream>,
+    reader: RefCell<BufReader<TcpStream>>,
     mode: Option<ChannelMode>, // None – Uninitialized mode
     max_buffer_size: usize,
-    protocol_version: usize,
+    protocol: Protocol,
 }
 
 impl SonicStream {
-    fn write<SC: StreamCommand>(&self, command: &SC) -> Result<()> {
-        let mut writer = BufWriter::with_capacity(self.max_buffer_size, &self.stream);
-        let message = command.message();
-        writer
-            .write_all(message.as_bytes())
-            .map_err(|_| Error::new(ErrorKind::WriteToStream))?;
+    fn send<SC: StreamCommand>(&self, command: &SC) -> Result<()> {
+        let buf = self
+            .protocol
+            .format_request(command.request())
+            .map_err(|_| Error::WriteToStream)?;
+        self.stream
+            .borrow_mut()
+            .write_all(&buf)
+            .map_err(|_| Error::WriteToStream)?;
         Ok(())
     }
 
-    fn read(&self, max_read_lines: usize) -> Result<String> {
-        let mut reader = BufReader::with_capacity(self.max_buffer_size, &self.stream);
-        let mut message = String::new();
+    fn read_line(&self) -> Result<protocol::Response> {
+        let line = {
+            let mut line = String::with_capacity(self.max_buffer_size);
+            self.reader
+                .borrow_mut()
+                .read_line(&mut line)
+                .map_err(|_| Error::ReadStream)?;
+            line
+        };
 
-        for _ in 0..max_read_lines {
-            reader
-                .read_line(&mut message)
-                .map_err(|_| Error::new(ErrorKind::ReadStream))?;
-            if message.starts_with("ERR ") {
-                break;
-            }
-        }
-
-        Ok(message)
+        log::debug!("[channel] {}", &line);
+        self.protocol.parse_response(&line)
     }
 
     pub(crate) fn run_command<SC: StreamCommand>(&self, command: SC) -> Result<SC::Response> {
-        self.write(&command)?;
-        let message = self.read(SC::READ_LINES_COUNT)?;
-        if let Some(error) = message.strip_prefix("ERR ") {
-            Err(Error::new(ErrorKind::SonicServer(Box::leak(
-                error.to_owned().into_boxed_str(),
-            ))))
-        } else {
-            command.receive(message)
-        }
+        self.send(&command)?;
+        let res = loop {
+            let res = self.read_line()?;
+            if !matches!(&res, protocol::Response::Pending(_)) {
+                break res;
+            }
+        };
+        command.receive(res)
     }
 
     fn connect<A: ToSocketAddrs>(addr: A) -> Result<Self> {
-        let stream =
-            TcpStream::connect(addr).map_err(|_| Error::new(ErrorKind::ConnectToServer))?;
+        let stream = TcpStream::connect(addr).map_err(|_| Error::ConnectToServer)?;
+        let read_stream = stream.try_clone().map_err(|_| Error::ConnectToServer)?;
 
         let channel = SonicStream {
-            stream,
+            reader: RefCell::new(BufReader::new(read_stream)),
+            stream: RefCell::new(stream),
             mode: None,
             max_buffer_size: UNINITIALIZED_MODE_MAX_BUFFER_SIZE,
-            protocol_version: DEFAULT_SONIC_PROTOCOL_VERSION,
+            protocol: Default::default(),
         };
 
-        let message = channel.read(1)?;
-        // TODO: need to add support for versions
-        if message.starts_with("CONNECTED") {
+        let res = channel.read_line()?;
+        if matches!(res, protocol::Response::Connected) {
             Ok(channel)
         } else {
-            Err(Error::new(ErrorKind::ConnectToServer))
+            Err(Error::ConnectToServer)
         }
     }
 
     fn start<S: ToString>(&mut self, mode: ChannelMode, password: S) -> Result<()> {
         if self.mode.is_some() {
-            return Err(Error::new(ErrorKind::RunCommand));
+            return Err(Error::RunCommand);
         }
 
-        let command = StartCommand {
+        let res = self.run_command(StartCommand {
             mode,
             password: password.to_string(),
-        };
-        let response = self.run_command(command)?;
+        })?;
 
-        self.max_buffer_size = response.max_buffer_size;
-        self.protocol_version = response.protocol_version;
-        self.mode = Some(response.mode);
+        self.max_buffer_size = res.max_buffer_size;
+        self.protocol = Protocol::from(res.protocol_version);
+        self.mode = Some(res.mode);
 
         Ok(())
     }
@@ -167,22 +167,6 @@ impl SonicStream {
     ///
     /// I think we shouldn't separate commands connect and start because we haven't
     /// possibility to change channel in sonic server, if we already chosen one of them. 🤔
-    ///
-    /// ```rust,no_run
-    /// use sonic_channel::*;
-    ///
-    /// fn main() -> result::Result<()> {
-    ///     let channel = SearchChannel::start(
-    ///         "localhost:1491",
-    ///         "SecretPassword"
-    ///     )?;
-    ///
-    ///     // Now you can use all method of Search channel.
-    ///     let objects = channel.query("search", "default", "beef");
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
     pub(crate) fn connect_with_start<A, S>(mode: ChannelMode, addr: A, password: S) -> Result<Self>
     where
         A: ToSocketAddrs,
@@ -222,7 +206,7 @@ pub trait SonicChannel {
 
 #[cfg(test)]
 mod tests {
-    use super::ChannelMode;
+    use super::*;
 
     #[test]
     fn format_channel_enums() {

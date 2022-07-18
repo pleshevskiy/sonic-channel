@@ -1,47 +1,47 @@
 use super::StreamCommand;
+use crate::protocol;
 use crate::result::*;
-use std::fmt;
+use std::path::PathBuf;
 
+/// Parameters for the `trigger` command.
 #[derive(Debug)]
-pub enum TriggerAction<'a> {
+pub enum TriggerRequest<'a> {
+    /// Consolidate indexed search data instead of waiting for the next automated
+    /// consolidation tick.
     Consolidate,
+
+    /// Backup KV + FST to <path>/<BACKUP_{KV/FST}_PATH>
+    /// See [sonic backend source code](https://github.com/valeriansaliou/sonic/blob/master/src/channel/command.rs#L808)
+    /// for more information.
     Backup(&'a str),
+
+    /// Restore KV + FST from <path> if you already have backup with the same name.
     Restore(&'a str),
 }
 
-impl Default for TriggerAction<'_> {
-    fn default() -> Self {
-        TriggerAction::Consolidate
-    }
-}
-
-impl fmt::Display for TriggerAction<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
-        match self {
-            TriggerAction::Consolidate => write!(f, "consolidate"),
-            TriggerAction::Backup(data) => write!(f, "backup {}", data),
-            TriggerAction::Restore(data) => write!(f, "restore {}", data),
-        }
-    }
-}
-
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct TriggerCommand<'a> {
-    pub action: TriggerAction<'a>,
+    pub(crate) req: TriggerRequest<'a>,
 }
 
 impl StreamCommand for TriggerCommand<'_> {
-    type Response = bool;
+    type Response = ();
 
-    fn message(&self) -> String {
-        format!("TRIGGER {}\r\n", self.action)
+    fn request(&self) -> protocol::Request {
+        let req = match self.req {
+            TriggerRequest::Consolidate => protocol::TriggerRequest::Consolidate,
+            TriggerRequest::Backup(path) => protocol::TriggerRequest::Backup(PathBuf::from(path)),
+            TriggerRequest::Restore(path) => protocol::TriggerRequest::Restore(PathBuf::from(path)),
+        };
+
+        protocol::Request::Trigger(req)
     }
 
-    fn receive(&self, message: String) -> Result<Self::Response> {
-        if message == "OK\r\n" {
-            Ok(true)
+    fn receive(&self, res: protocol::Response) -> Result<Self::Response> {
+        if matches!(res, protocol::Response::Ok) {
+            Ok(())
         } else {
-            Err(Error::new(ErrorKind::WrongResponse))
+            Err(Error::WrongResponse)
         }
     }
 }

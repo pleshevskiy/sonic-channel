@@ -7,10 +7,15 @@ const COLLECTION: &str = "Ingest";
 fn should_push_new_object_to_sonic() {
     let bucket = "push_simple";
 
+    let dest = Dest::col_buc(COLLECTION, bucket);
+
     let ingest_channel = ingest_start();
-    match ingest_channel.push(COLLECTION, bucket, "1", "Sweet Teriyaki Beef Skewers") {
-        Ok(res) => assert!(res),
-        Err(_) => unreachable!(),
+    match ingest_channel.push(PushRequest::new(
+        dest.obj("1"),
+        "Sweet Teriyaki Beef Skewers",
+    )) {
+        Ok(()) => {}
+        _ => unreachable!(),
     }
 
     flush_bucket(COLLECTION, bucket);
@@ -20,16 +25,14 @@ fn should_push_new_object_to_sonic() {
 fn should_push_new_object_to_sonic_with_russian_locale() {
     let bucket = "push_locale";
 
+    let dest = Dest::col_buc(COLLECTION, bucket);
+
     let ingest_channel = ingest_start();
-    match ingest_channel.push_with_locale(
-        COLLECTION,
-        bucket,
-        "1",
-        "Открытый пирог с орехами и сгущенкой",
-        "rus",
+    match ingest_channel.push(
+        PushRequest::new(dest.obj("1"), "Открытый пирог с орехами и сгущенкой").lang(Lang::Rus),
     ) {
-        Ok(res) => assert!(res),
-        Err(_) => unreachable!(),
+        Ok(()) => {}
+        _ => unreachable!(),
     }
 
     flush_bucket(COLLECTION, bucket);
@@ -45,10 +48,12 @@ Beef
 Skewers
 ";
 
+    let dest = Dest::col_buc(COLLECTION, bucket);
+
     let ingest_channel = ingest_start();
-    match ingest_channel.push(COLLECTION, bucket, "1", multiline_text) {
-        Ok(res) => assert!(res),
-        Err(_) => unreachable!(),
+    match ingest_channel.push(PushRequest::new(dest.obj("1"), multiline_text)) {
+        Ok(()) => {}
+        _ => unreachable!(),
     }
 
     flush_bucket(COLLECTION, bucket);

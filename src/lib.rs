@@ -17,7 +17,10 @@
 //!         "SecretPassword",
 //!     )?;
 //!
-//!     let objects = channel.query("collection", "bucket", "recipe")?;
+//!     let objects = channel.query(QueryRequest::new(
+//!         Dest::col_buc("collection", "bucket"),
+//!         "recipe",
+//!     ))?;
 //!     dbg!(objects);
 //!
 //!     Ok(())
@@ -32,14 +35,17 @@
 //! use sonic_channel::*;
 //!
 //! fn main() -> result::Result<()> {
-//!     let mut channel = IngestChannel::start(
+//!     let channel = IngestChannel::start(
 //!         "localhost:1491",
 //!         "SecretPassword",
 //!     )?;
 //!
-//!     let pushed = channel.push("collection", "bucket", "object:1", "my best recipe")?;
+//!     let dest = Dest::col_buc("collection", "bucket").obj("object:1");
+//!     let pushed = channel.push(PushRequest::new(dest, "my best recipe"))?;
 //!     // or
-//!     // let pushed = channel.push_with_locale("collection", "bucket", "object:1", "Мой лучший рецепт", "rus")?;
+//!     // let pushed = channel.push(
+//!     //     PushRequest::new(dest, "Мой лучший рецепт").lang(Lang::Rus)
+//!     // )?;
 //!     dbg!(pushed);
 //!
 //!     Ok(())
@@ -54,13 +60,13 @@
 //! use sonic_channel::*;
 //!
 //! fn main() -> result::Result<()> {
-//!     let mut channel = ControlChannel::start(
+//!     let channel = ControlChannel::start(
 //!         "localhost:1491",
 //!         "SecretPassword",
 //!     )?;
 //!
 //!     let result = channel.consolidate()?;
-//!     assert_eq!(result, true);
+//!     assert_eq!(result, ());
 //!
 //!     Ok(())
 //! }
@@ -87,15 +93,20 @@ compile_error!(
 
 #[macro_use]
 mod macroses;
+mod misc;
+
+pub(crate) mod protocol;
 
 mod channels;
-mod commands;
+
+/// Contains the request parameters for each command to the sonic server.
+pub mod commands;
 
 /// Contains sonic channel error type and custom Result type for easy configure your functions.
 pub mod result;
 
 pub use channels::*;
+pub use commands::*;
+pub use misc::*;
 
-#[macro_use]
-extern crate lazy_static;
-extern crate regex;
+pub use whatlang::Lang;

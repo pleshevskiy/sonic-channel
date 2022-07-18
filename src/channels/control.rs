@@ -70,11 +70,10 @@ impl ControlChannel {
 
 impl ControlChannel {
     init_command!(
-        /// Consolidate indexed search data instead of waiting for the next automated
-        /// consolidation tick.
+        /// Trigger control action.
         ///
-        /// Note: This method requires enabling the `control` feature and start
-        /// connection in Control mode.
+        /// Note: This method requires enabling the `control` feature and start connection in
+        /// Control mode
         ///
         /// ```rust,no_run
         /// # use sonic_channel::*;
@@ -84,65 +83,78 @@ impl ControlChannel {
         ///     "SecretPassword",
         /// )?;
         ///
-        /// let result = control_channel.consolidate()?;
-        /// assert_eq!(result, true);
+        /// control_channel.trigger(TriggerRequest::Consolidate)?;
         /// # Ok(())
         /// # }
-        /// ```
-        use TriggerCommand for fn consolidate()
+        use TriggerCommand for fn trigger(
+            req: TriggerRequest,
+        )
     );
 
-    init_command!(
-        /// Backup KV + FST to <path>/<BACKUP_{KV/FST}_PATH>
-        /// See [sonic backend source code](https://github.com/valeriansaliou/sonic/blob/master/src/channel/command.rs#L808)
-        /// for more information.
-        ///
-        /// Note: This method requires enabling the `control` feature and start
-        /// connection in Control mode.
-        ///
-        /// ```rust,no_run
-        /// # use sonic_channel::*;
-        /// # fn main() -> result::Result<()> {
-        /// let control_channel = ControlChannel::start(
-        ///     "localhost:1491",
-        ///     "SecretPassword",
-        /// )?;
-        ///
-        /// let result = control_channel.backup("2020-08-07T23-48")?;
-        /// assert_eq!(result, true);
-        /// # Ok(())
-        /// # }
-        /// ```
-        use TriggerCommand for fn backup<'a>(
-            // It's not action, but my macro cannot support alias for custom argument.
-            // TODO: Add alias to macro and rename argument of this function.
-            action: &'a str => TriggerAction::Backup(action),
-        );
-    );
+    /// Consolidate indexed search data instead of waiting for the next automated
+    /// consolidation tick.
+    ///
+    /// Note: This method requires enabling the `control` feature and start
+    /// connection in Control mode.
+    ///
+    /// ```rust,no_run
+    /// # use sonic_channel::*;
+    /// # fn main() -> result::Result<()> {
+    /// let control_channel = ControlChannel::start(
+    ///     "localhost:1491",
+    ///     "SecretPassword",
+    /// )?;
+    ///
+    /// control_channel.consolidate()?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn consolidate(&self) -> Result<()> {
+        self.trigger(TriggerRequest::Consolidate)
+    }
 
-    init_command!(
-        /// Restore KV + FST from <path> if you already have backup with the same name.
-        ///
-        /// Note: This method requires enabling the `control` feature and start
-        /// connection in Control mode.
-        ///
-        /// ```rust,no_run
-        /// # use sonic_channel::*;
-        /// # fn main() -> result::Result<()> {
-        /// let control_channel = ControlChannel::start(
-        ///     "localhost:1491",
-        ///     "SecretPassword",
-        /// )?;
-        ///
-        /// let result = control_channel.restore("2020-08-07T23-48")?;
-        /// assert_eq!(result, true);
-        /// # Ok(())
-        /// # }
-        /// ```
-        use TriggerCommand for fn restore<'a>(
-            // It's not action, but my macro cannot support alias for custom argument.
-            // TODO: Add alias to macro and rename argument of this function.
-            action: &'a str => TriggerAction::Restore(action),
-        );
-    );
+    /// Backup KV + FST to <path>/<BACKUP_{KV/FST}_PATH>
+    /// See [sonic backend source code](https://github.com/valeriansaliou/sonic/blob/master/src/channel/command.rs#L808)
+    /// for more information.
+    ///
+    /// Note: This method requires enabling the `control` feature and start
+    /// connection in Control mode.
+    ///
+    /// ```rust,no_run
+    /// # use sonic_channel::*;
+    /// # fn main() -> result::Result<()> {
+    /// let control_channel = ControlChannel::start(
+    ///     "localhost:1491",
+    ///     "SecretPassword",
+    /// )?;
+    ///
+    /// control_channel.backup("2020-08-07T23-48")?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn backup(&self, path: &str) -> Result<()> {
+        self.trigger(TriggerRequest::Backup(path))
+    }
+
+    /// Restore KV + FST from <path> if you already have backup with the same name.
+    ///
+    /// Note: This method requires enabling the `control` feature and start
+    /// connection in Control mode.
+    ///
+    /// ```rust,no_run
+    /// # use sonic_channel::*;
+    /// # fn main() -> result::Result<()> {
+    /// let control_channel = ControlChannel::start(
+    ///     "localhost:1491",
+    ///     "SecretPassword",
+    /// )?;
+    ///
+    /// let result = control_channel.restore("2020-08-07T23-48")?;
+    /// assert_eq!(result, ());
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn restore(&self, path: &str) -> Result<()> {
+        self.trigger(TriggerRequest::Restore(path))
+    }
 }

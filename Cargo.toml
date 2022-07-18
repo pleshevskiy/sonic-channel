@@ -1,11 +1,11 @@
 [package]
 name = "sonic-channel"
-version = "0.6.0"
+version = "1.0.0"
 authors = ["Dmitriy Pleshevskiy <dmitriy@ideascup.me>"]
 description = "Rust client for sonic search backend"
 categories = ["api-bindings"]
 keywords = ["sonic", "search", "client", "elasticsearch", "api"]
-edition = "2018"
+edition = "2021"
 license = "MPL-2.0"
 repository = "https://github.com/pleshevskiy/sonic-channel"
 homepage = "https://github.com/pleshevskiy/sonic-channel"
@@ -15,8 +15,9 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-lazy_static = "1.4.0"
-regex = "1.3.4"
+# TODO(pleshevskiy): don't forget to remove before publishing
+env_logger = "0.9.0"
+log = "0.4.17"
 whatlang = "0.12.0"
 
 [features]

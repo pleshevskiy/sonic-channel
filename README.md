@@ -17,7 +17,7 @@ version = "0.1.0"
 authors = ["Me <user@rust-lang.org>"]
 
 [dependencies]
-sonic-channel = { version = "0.6", features = ["ingest"] }
+sonic-channel = { version = "1.0", features = ["ingest"] }
 ```
 
 Add `default-features = false` to dependency, if you want to exclude default
@@ -33,8 +33,15 @@ Note: This example requires enabling the `search` feature, enabled by default.
 use sonic_channel::*;
 
 fn main() -> result::Result<()> {
-    let channel = SearchChannel::start("localhost:1491", "SecretPassword")?;
-    let objects = channel.query("collection", "bucket", "recipe")?;
+    let channel = SearchChannel::start(
+        "localhost:1491",
+        "SecretPassword",
+    )?;
+
+    let objects = channel.query(QueryRequest::new(
+        Dest::col_buc("collection", "bucket"),
+        "recipe",
+    ))?;
     dbg!(objects);
 
     Ok(())
@@ -49,10 +56,17 @@ Note: This example requires enabling the `ingest` feature.
 use sonic_channel::*;
 
 fn main() -> result::Result<()> {
-    let channel = IngestChannel::start("localhost:1491", "SecretPassword")?;
-    let pushed = channel.push("collection", "bucket", "object:1", "my best recipe")?;
+    let channel = IngestChannel::start(
+        "localhost:1491",
+        "SecretPassword",
+    )?;
+
+    let dest = Dest::col_buc("collection", "bucket").obj("object:1");
+    let pushed = channel.push(PushRequest::new(dest, "my best recipe"))?;
     // or
-    // let pushed = channel.push_with_locale("collection", "bucket", "object:1", "Мой лучший рецепт", "rus")?;
+    // let pushed = channel.push(
+    //     PushRequest::new(dest, "Мой лучший рецепт").lang(Lang::Rus)
+    // )?;
     dbg!(pushed);
 
     Ok(())
@@ -67,9 +81,13 @@ Note: This example requires enabling the `control` feature.
 use sonic_channel::*;
 
 fn main() -> result::Result<()> {
-    let channel = ControlChannel::start("localhost:1491", "SecretPassword")?;
+    let channel = ControlChannel::start(
+        "localhost:1491",
+        "SecretPassword",
+    )?;
+
     let result = channel.consolidate()?;
-    assert_eq!(result, true);
+    assert_eq!(result, ());
 
     Ok(())
 }
