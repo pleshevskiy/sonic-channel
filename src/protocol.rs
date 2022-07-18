@@ -5,6 +5,7 @@ use crate::{result::*, ChannelMode};
 
 #[derive(Debug, Default)]
 pub struct Protocol {
+    #[allow(dead_code)]
     version: Version,
 }
 

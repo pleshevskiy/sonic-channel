@@ -1,5 +1,5 @@
 use super::StreamCommand;
-use crate::misc::OptDest;
+use crate::misc::*;
 use crate::protocol;
 use crate::result::*;
 
@@ -25,6 +25,18 @@ impl FlushRequest {
         object: impl ToString,
     ) -> FlushRequest {
         Self(OptDest::col_buc_obj(collection, bucket, object))
+    }
+}
+
+impl From<Dest> for FlushRequest {
+    fn from(d: Dest) -> Self {
+        Self(OptDest::from(d))
+    }
+}
+
+impl From<ObjDest> for FlushRequest {
+    fn from(d: ObjDest) -> Self {
+        Self(OptDest::from(d))
     }
 }
 

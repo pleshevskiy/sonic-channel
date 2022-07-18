@@ -143,3 +143,23 @@ impl OptDest {
         }
     }
 }
+
+impl From<Dest> for OptDest {
+    fn from(d: Dest) -> Self {
+        Self {
+            collection: d.collection,
+            bucket: d.bucket,
+            object: None,
+        }
+    }
+}
+
+impl From<ObjDest> for OptDest {
+    fn from(ObjDest(dest, obj): ObjDest) -> Self {
+        Self {
+            collection: dest.collection,
+            bucket: dest.bucket,
+            object: Some(obj),
+        }
+    }
+}
