@@ -1,5 +1,10 @@
 # Sonic Channel
 
+[![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
+[![Documentation](https://docs.rs/sonic-channel/badge.svg)](https://docs.rs/sonic-channel)
+[![Crates.io](https://img.shields.io/crates/v/sonic-channel)](https://crates.io/crates/sonic-channel)
+![Crates.io](https://img.shields.io/crates/l/sonic-channel)
+
 Rust client for [sonic] search backend.
 
 We recommend you start with the [documentation].
