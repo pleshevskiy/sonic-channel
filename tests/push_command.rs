@@ -10,11 +10,10 @@ fn should_push_new_object_to_sonic() {
     let dest = Dest::col_buc(COLLECTION, bucket);
 
     let ingest_channel = ingest_start();
-    match ingest_channel.push(PushRequest {
-        dest: dest.obj("1"),
-        text: "Sweet Teriyaki Beef Skewers",
-        lang: None,
-    }) {
+    match ingest_channel.push(PushRequest::new(
+        dest.obj("1"),
+        "Sweet Teriyaki Beef Skewers",
+    )) {
         Ok(()) => {}
         _ => unreachable!(),
     }
@@ -29,11 +28,9 @@ fn should_push_new_object_to_sonic_with_russian_locale() {
     let dest = Dest::col_buc(COLLECTION, bucket);
 
     let ingest_channel = ingest_start();
-    match ingest_channel.push(PushRequest {
-        dest: dest.obj("1"),
-        text: "Открытый пирог с орехами и сгущенкой",
-        lang: Some(Lang::Rus),
-    }) {
+    match ingest_channel.push(
+        PushRequest::new(dest.obj("1"), "Открытый пирог с орехами и сгущенкой").lang(Lang::Rus),
+    ) {
         Ok(()) => {}
         _ => unreachable!(),
     }
@@ -54,11 +51,7 @@ Skewers
     let dest = Dest::col_buc(COLLECTION, bucket);
 
     let ingest_channel = ingest_start();
-    match ingest_channel.push(PushRequest {
-        dest: dest.obj("1"),
-        text: multiline_text,
-        lang: None,
-    }) {
+    match ingest_channel.push(PushRequest::new(dest.obj("1"), multiline_text)) {
         Ok(()) => {}
         _ => unreachable!(),
     }

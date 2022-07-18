@@ -4,39 +4,51 @@ use crate::protocol;
 use crate::result::*;
 
 #[derive(Debug)]
-pub struct QueryRequest<'a> {
+pub struct QueryRequest {
     pub dest: Dest,
-    pub terms: &'a str,
-    pub lang: Option<whatlang::Lang>,
-}
-
-#[derive(Debug)]
-pub struct PagQueryRequest<'a> {
-    pub dest: Dest,
-    pub terms: &'a str,
+    pub terms: String,
     pub lang: Option<whatlang::Lang>,
     pub limit: Option<usize>,
     pub offset: Option<usize>,
 }
 
-impl<'a> From<QueryRequest<'a>> for PagQueryRequest<'a> {
-    fn from(req: QueryRequest<'a>) -> Self {
+impl QueryRequest {
+    pub fn new(dest: Dest, terms: impl ToString) -> Self {
         Self {
-            dest: req.dest,
-            terms: req.terms,
-            lang: req.lang,
+            dest,
+            terms: terms.to_string(),
+            lang: None,
             limit: None,
             offset: None,
         }
     }
+
+    pub fn lang(mut self, lang: whatlang::Lang) -> Self {
+        self.lang = Some(lang);
+        self
+    }
+
+    pub fn limit(mut self, limit: usize) -> Self {
+        self.limit = Some(limit);
+        self
+    }
+
+    pub fn offset(mut self, offset: usize) -> Self {
+        self.offset = Some(offset);
+        self
+    }
+
+    pub fn pag(self, offset: usize, limit: usize) -> Self {
+        self.offset(offset).limit(limit)
+    }
 }
 
 #[derive(Debug)]
-pub struct QueryCommand<'a> {
-    pub(crate) req: PagQueryRequest<'a>,
+pub struct QueryCommand {
+    pub(crate) req: QueryRequest,
 }
 
-impl StreamCommand for QueryCommand<'_> {
+impl StreamCommand for QueryCommand {
     type Response = Vec<String>;
 
     fn request(&self) -> protocol::Request {
@@ -45,7 +57,7 @@ impl StreamCommand for QueryCommand<'_> {
             .req
             .lang
             .or_else(|| {
-                whatlang::detect(self.req.terms)
+                whatlang::detect(&self.req.terms)
                     .and_then(|i| (i.confidence() == 1.0).then(|| i.lang()))
             })
             .map(|l| l.code());
@@ -56,7 +68,7 @@ impl StreamCommand for QueryCommand<'_> {
                 .bucket_opt()
                 .cloned()
                 .unwrap_or_else(|| String::from("default")),
-            terms: self.req.terms.to_string(),
+            terms: self.req.terms.clone(),
             offset: self.req.offset,
             limit: self.req.limit,
             lang,

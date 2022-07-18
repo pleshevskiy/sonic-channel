@@ -4,34 +4,33 @@ use crate::protocol;
 use crate::result::*;
 
 #[derive(Debug)]
-pub struct SuggestRequest<'a> {
+pub struct SuggestRequest {
     pub dest: Dest,
-    pub word: &'a str,
-}
-
-#[derive(Debug)]
-pub struct LimSuggestRequest<'a> {
-    pub dest: Dest,
-    pub word: &'a str,
+    pub word: String,
     pub limit: Option<usize>,
 }
 
-impl<'a> From<SuggestRequest<'a>> for LimSuggestRequest<'a> {
-    fn from(req: SuggestRequest<'a>) -> Self {
+impl SuggestRequest {
+    pub fn new(dest: Dest, word: impl ToString) -> Self {
         Self {
-            dest: req.dest,
-            word: req.word,
+            dest,
+            word: word.to_string(),
             limit: None,
         }
+    }
+
+    pub fn limit(mut self, limit: usize) -> Self {
+        self.limit = Some(limit);
+        self
     }
 }
 
 #[derive(Debug)]
-pub struct SuggestCommand<'a> {
-    pub(crate) req: LimSuggestRequest<'a>,
+pub struct SuggestCommand {
+    pub(crate) req: SuggestRequest,
 }
 
-impl StreamCommand for SuggestCommand<'_> {
+impl StreamCommand for SuggestCommand {
     type Response = Vec<String>;
 
     fn request(&self) -> protocol::Request {

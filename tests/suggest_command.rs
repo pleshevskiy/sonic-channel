@@ -12,11 +12,7 @@ fn should_suggest_nearest_word() {
 
     let ingest_channel = ingest_start();
     ingest_channel
-        .push(PushRequest {
-            dest: dest.clone().obj("1"),
-            text: title,
-            lang: None,
-        })
+        .push(PushRequest::new(dest.clone().obj("1"), title))
         .unwrap();
 
     consolidate();
@@ -30,10 +26,7 @@ fn should_suggest_nearest_word() {
 
     let search_channel = search_start();
     for (input, expected) in pairs {
-        match search_channel.suggest(SuggestRequest {
-            dest: dest.clone(),
-            word: input,
-        }) {
+        match search_channel.suggest(SuggestRequest::new(dest.clone(), input)) {
             Ok(object_ids) => assert_eq!(object_ids, vec![expected]),
             Err(_) => unreachable!(),
         }

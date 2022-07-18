@@ -83,11 +83,10 @@ impl IngestChannel {
         ///     "SecretPassword",
         /// )?;
         ///
-        /// let result = ingest_channel.push(PushRequest {
-        ///     dest: Dest::col("search").obj("recipe:295"),
-        ///     text: "Sweet Teriyaki Beef Skewers",
-        ///     lang: None,
-        /// })?;
+        /// let result = ingest_channel.push(PushRequest::new(
+        ///     Dest::col("search").obj("recipe:295"),
+        ///     "Sweet Teriyaki Beef Skewers"
+        /// ))?;
         /// assert_eq!(result, ());
         /// # Ok(())
         /// # }
@@ -111,10 +110,8 @@ impl IngestChannel {
         ///     "SecretPassword",
         /// )?;
         ///
-        /// let result = ingest_channel.pop(PopRequest {
-        ///     dest: Dest::col("search").obj("recipe:295"),
-        ///     text: "beef"
-        /// })?;
+        /// let dest = Dest::col("search").obj("recipe:295");
+        /// let result = ingest_channel.pop(PopRequest::new(dest, "beef"))?;
         /// assert_eq!(result, 1);
         /// # Ok(())
         /// # }

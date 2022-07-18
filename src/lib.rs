@@ -17,11 +17,10 @@
 //!         "SecretPassword",
 //!     )?;
 //!
-//!     let objects = channel.query(QueryRequest {
-//!         dest: Dest::col_buc("collection", "bucket"),
-//!         terms: "recipe",
-//!         lang: None,
-//!     })?;
+//!     let objects = channel.query(QueryRequest::new(
+//!         Dest::col_buc("collection", "bucket"),
+//!         "recipe",
+//!     ))?;
 //!     dbg!(objects);
 //!
 //!     Ok(())
@@ -41,17 +40,12 @@
 //!         "SecretPassword",
 //!     )?;
 //!
-//!     let pushed = channel.push(PushRequest {
-//!         dest: Dest::col_buc("collection", "bucket").obj("object:1"),
-//!         text: "my best recipe",
-//!         lang: None, // <<< auto detect
-//!     })?;
+//!     let dest = Dest::col_buc("collection", "bucket").obj("object:1");
+//!     let pushed = channel.push(PushRequest::new(dest, "my best recipe"))?;
 //!     // or
-//!     // let pushed = channel.push(PushRequest {
-//!     //     dest: Dest::col_buc("collection", "bucket").obj("object:1"),
-//!     //     text: "Мой лучший рецепт",
-//!     //     lang: Some(Lang::Rus)
-//!     // })?;
+//!     // let pushed = channel.push(
+//!     //     PushRequest::new(dest, "Мой лучший рецепт").lang(Lang::Rus)
+//!     // )?;
 //!     dbg!(pushed);
 //!
 //!     Ok(())

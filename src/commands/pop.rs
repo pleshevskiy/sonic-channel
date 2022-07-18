@@ -4,17 +4,26 @@ use crate::protocol;
 use crate::result::*;
 
 #[derive(Debug)]
-pub struct PopRequest<'a> {
+pub struct PopRequest {
     pub dest: ObjDest,
-    pub text: &'a str,
+    pub text: String,
+}
+
+impl PopRequest {
+    pub fn new(dest: ObjDest, text: impl ToString) -> Self {
+        Self {
+            dest,
+            text: text.to_string(),
+        }
+    }
 }
 
 #[derive(Debug)]
-pub struct PopCommand<'a> {
-    pub(crate) req: PopRequest<'a>,
+pub struct PopCommand {
+    pub(crate) req: PopRequest,
 }
 
-impl StreamCommand for PopCommand<'_> {
+impl StreamCommand for PopCommand {
     type Response = usize;
 
     fn request(&self) -> protocol::Request {

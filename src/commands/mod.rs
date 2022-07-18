@@ -31,10 +31,7 @@ pub use self::{count::CountRequest, flush::FlushRequest, pop::PopRequest, push::
 #[cfg(feature = "search")]
 pub(crate) use self::{query::QueryCommand, suggest::SuggestCommand};
 #[cfg(feature = "search")]
-pub use self::{
-    query::{PagQueryRequest, QueryRequest},
-    suggest::{LimSuggestRequest, SuggestRequest},
-};
+pub use self::{query::QueryRequest, suggest::SuggestRequest};
 
 #[cfg(feature = "control")]
 pub(crate) use trigger::TriggerCommand;

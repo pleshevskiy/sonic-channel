@@ -4,18 +4,33 @@ use crate::protocol;
 use crate::result::*;
 
 #[derive(Debug)]
-pub struct PushRequest<'a> {
+pub struct PushRequest {
     pub dest: ObjDest,
-    pub text: &'a str,
+    pub text: String,
     pub lang: Option<whatlang::Lang>,
 }
 
-#[derive(Debug)]
-pub struct PushCommand<'a> {
-    pub(crate) req: PushRequest<'a>,
+impl PushRequest {
+    pub fn new(dest: ObjDest, text: impl ToString) -> Self {
+        Self {
+            dest,
+            text: text.to_string(),
+            lang: None,
+        }
+    }
+
+    pub fn lang(mut self, lang: whatlang::Lang) -> Self {
+        self.lang = Some(lang);
+        self
+    }
 }
 
-impl StreamCommand for PushCommand<'_> {
+#[derive(Debug)]
+pub struct PushCommand {
+    pub(crate) req: PushRequest,
+}
+
+impl StreamCommand for PushCommand {
     type Response = ();
 
     fn request(&self) -> protocol::Request {
@@ -24,7 +39,7 @@ impl StreamCommand for PushCommand<'_> {
         let lang = req
             .lang
             .or_else(|| {
-                whatlang::detect(req.text).and_then(|i| (i.confidence() == 1.0).then(|| i.lang()))
+                whatlang::detect(&req.text).and_then(|i| (i.confidence() == 1.0).then(|| i.lang()))
             })
             .map(|l| l.code());
 
