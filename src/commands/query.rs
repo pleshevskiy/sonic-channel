@@ -48,8 +48,12 @@ impl QueryRequest {
         self
     }
 
-    /// Set an offset and a limit for the request.
-    pub fn pag(self, offset: usize, limit: usize) -> Self {
+    /// Set the pagination for the request. Automatic offset calculation based on provided
+    /// limit and page.
+    ///
+    /// Note: the first page is 0;
+    pub fn pag(self, page: usize, limit: usize) -> Self {
+        let offset = page * limit;
         self.offset(offset).limit(limit)
     }
 }
