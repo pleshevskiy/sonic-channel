@@ -6,7 +6,7 @@ We recommend you start with the [documentation].
 
 ## Installation
 
-Add `sonic-channel = { version = "0.6" }` as a dependency in `Cargo.toml`.
+Add `sonic-channel = { version = "1.0" }` as a dependency in `Cargo.toml`.
 
 `Cargo.toml` example:
 
