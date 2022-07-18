@@ -3,10 +3,19 @@ use crate::protocol;
 use crate::result::*;
 use std::path::PathBuf;
 
+/// Parameters for the `trigger` command.
 #[derive(Debug)]
 pub enum TriggerRequest<'a> {
+    /// Consolidate indexed search data instead of waiting for the next automated
+    /// consolidation tick.
     Consolidate,
+
+    /// Backup KV + FST to <path>/<BACKUP_{KV/FST}_PATH>
+    /// See [sonic backend source code](https://github.com/valeriansaliou/sonic/blob/master/src/channel/command.rs#L808)
+    /// for more information.
     Backup(&'a str),
+
+    /// Restore KV + FST from <path> if you already have backup with the same name.
     Restore(&'a str),
 }
 

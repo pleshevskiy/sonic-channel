@@ -3,13 +3,17 @@ use crate::misc::ObjDest;
 use crate::protocol;
 use crate::result::*;
 
+/// Parameters for the `pop` command.
 #[derive(Debug)]
 pub struct PopRequest {
+    /// Collection, bucket and object where we should pop search data from index.
     pub dest: ObjDest,
+    /// Search data to be deleted
     pub text: String,
 }
 
 impl PopRequest {
+    /// Creates a base pop request.
     pub fn new(dest: ObjDest, text: impl ToString) -> Self {
         Self {
             dest,

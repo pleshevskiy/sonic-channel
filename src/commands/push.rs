@@ -3,14 +3,19 @@ use crate::misc::ObjDest;
 use crate::protocol;
 use crate::result::*;
 
+/// Parameters for the `push` command.
 #[derive(Debug)]
 pub struct PushRequest {
+    /// Collection, bucket and object where we should push search data in the index.
     pub dest: ObjDest,
+    /// Search data to be added
     pub text: String,
+    /// Language of the search data. If None, the client will try to determine based on the `text`.
     pub lang: Option<whatlang::Lang>,
 }
 
 impl PushRequest {
+    /// Creates a base push request
     pub fn new(dest: ObjDest, text: impl ToString) -> Self {
         Self {
             dest,
@@ -19,6 +24,7 @@ impl PushRequest {
         }
     }
 
+    /// Set a language for the request.
     pub fn lang(mut self, lang: whatlang::Lang) -> Self {
         self.lang = Some(lang);
         self

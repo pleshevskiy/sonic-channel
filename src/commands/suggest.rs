@@ -3,14 +3,19 @@ use crate::misc::Dest;
 use crate::protocol;
 use crate::result::*;
 
+/// Parameters for the `suggest` command.
 #[derive(Debug)]
 pub struct SuggestRequest {
+    /// Collection and bucket where we should search for suggested words.
     pub dest: Dest,
+    /// Base word.
     pub word: String,
+    /// Limit of result words.
     pub limit: Option<usize>,
 }
 
 impl SuggestRequest {
+    /// Creates a base suggest request.
     pub fn new(dest: Dest, word: impl ToString) -> Self {
         Self {
             dest,
@@ -19,6 +24,7 @@ impl SuggestRequest {
         }
     }
 
+    /// Set a limit for the request.
     pub fn limit(mut self, limit: usize) -> Self {
         self.limit = Some(limit);
         self

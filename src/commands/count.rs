@@ -3,18 +3,22 @@ use crate::misc::OptDest;
 use crate::protocol;
 use crate::result::*;
 
+/// Parameters for the `count` command.
 #[derive(Debug)]
 pub struct CountRequest(OptDest);
 
 impl CountRequest {
+    /// Creates a new request to get the number of buckets in the collection.
     pub fn buckets(collection: impl ToString) -> CountRequest {
         Self(OptDest::col(collection))
     }
 
+    /// Creates a new request to get the number of objects in the collection bucket.
     pub fn objects(collection: impl ToString, bucket: impl ToString) -> CountRequest {
         Self(OptDest::col_buc(collection, bucket))
     }
 
+    /// Creates a new request to get the number of words in the collection bucket object.
     pub fn words(
         collection: impl ToString,
         bucket: impl ToString,

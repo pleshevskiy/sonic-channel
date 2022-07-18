@@ -35,7 +35,7 @@
 //! use sonic_channel::*;
 //!
 //! fn main() -> result::Result<()> {
-//!     let mut channel = IngestChannel::start(
+//!     let channel = IngestChannel::start(
 //!         "localhost:1491",
 //!         "SecretPassword",
 //!     )?;
@@ -60,7 +60,7 @@
 //! use sonic_channel::*;
 //!
 //! fn main() -> result::Result<()> {
-//!     let mut channel = ControlChannel::start(
+//!     let channel = ControlChannel::start(
 //!         "localhost:1491",
 //!         "SecretPassword",
 //!     )?;
@@ -93,13 +93,14 @@ compile_error!(
 
 #[macro_use]
 mod macroses;
+mod misc;
 
 pub(crate) mod protocol;
 
 mod channels;
-mod commands;
 
-mod misc;
+/// Contains the request parameters for each command to the sonic server.
+pub mod commands;
 
 /// Contains sonic channel error type and custom Result type for easy configure your functions.
 pub mod result;

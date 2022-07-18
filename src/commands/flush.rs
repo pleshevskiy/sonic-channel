@@ -3,18 +3,22 @@ use crate::misc::OptDest;
 use crate::protocol;
 use crate::result::*;
 
+/// Parameters for the `flush` command.
 #[derive(Debug)]
 pub struct FlushRequest(OptDest);
 
 impl FlushRequest {
+    /// Creates a new request to flush all data in the collection.
     pub fn collection(collection: impl ToString) -> FlushRequest {
         Self(OptDest::col(collection))
     }
 
+    /// Creates a new request to flush all data in the collection bucket.
     pub fn bucket(collection: impl ToString, bucket: impl ToString) -> FlushRequest {
         Self(OptDest::col_buc(collection, bucket))
     }
 
+    /// Creates a new request to flush all data in the collection bucket object.
     pub fn object(
         collection: impl ToString,
         bucket: impl ToString,

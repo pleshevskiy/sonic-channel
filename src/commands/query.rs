@@ -3,16 +3,23 @@ use crate::misc::Dest;
 use crate::protocol;
 use crate::result::*;
 
-#[derive(Debug)]
+/// Parameters for the `query` command
+#[derive(Debug, Clone)]
 pub struct QueryRequest {
+    /// Collection and bucket where we should search for objects.
     pub dest: Dest,
+    /// Searchable terms.
     pub terms: String,
+    /// Language of the search data. If None, the client will try to determine based on the `terms`.
     pub lang: Option<whatlang::Lang>,
+    /// Limit of result objects.
     pub limit: Option<usize>,
+    /// The number of result objects we want to skip.
     pub offset: Option<usize>,
 }
 
 impl QueryRequest {
+    /// Creates base query request.
     pub fn new(dest: Dest, terms: impl ToString) -> Self {
         Self {
             dest,
@@ -23,21 +30,25 @@ impl QueryRequest {
         }
     }
 
+    /// Set a language for the request.
     pub fn lang(mut self, lang: whatlang::Lang) -> Self {
         self.lang = Some(lang);
         self
     }
 
+    /// Set a limit for the request.
     pub fn limit(mut self, limit: usize) -> Self {
         self.limit = Some(limit);
         self
     }
 
+    /// Set an offset for the request.
     pub fn offset(mut self, offset: usize) -> Self {
         self.offset = Some(offset);
         self
     }
 
+    /// Set an offset and a limit for the request.
     pub fn pag(self, offset: usize, limit: usize) -> Self {
         self.offset(offset).limit(limit)
     }
