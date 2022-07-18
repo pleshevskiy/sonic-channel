@@ -1,5 +1,5 @@
 /// Search data destination. Contains collection, bucket and object.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjDest(Dest, String);
 
 impl ObjDest {

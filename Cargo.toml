@@ -1,6 +1,6 @@
 [package]
 name = "sonic-channel"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Dmitriy Pleshevskiy <dmitriy@ideascup.me>"]
 description = "Rust client for sonic search backend"
 categories = ["api-bindings"]
