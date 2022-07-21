@@ -47,8 +47,8 @@ jobs:
       - uses: isbang/compose-action@v0.1
 
       - name: Run tests
-        uses: action-rs/cargo@v1
+        uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --all-features --release
+          args: --all-features --verbose
   
