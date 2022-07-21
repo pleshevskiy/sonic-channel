@@ -12,6 +12,8 @@ We recommend you start with the [documentation].
 
 ## Installation
 
+**The MSRV is: 1.58.1**
+
 Add `sonic-channel = { version = "1.0" }` as a dependency in `Cargo.toml`.
 
 `Cargo.toml` example:
