@@ -1,4 +1,4 @@
-name: Build
+name: CI
 
 on:
   push:
@@ -10,8 +10,9 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  tests:
     strategy:
+      fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
         rust:
@@ -37,9 +38,6 @@ jobs:
           profile: minimal
           toolchain: ${{ matrix.rust }}
           override: true
-
-      - name: Build
-        run: cargo build --verbose
 
       - uses: isbang/compose-action@v0.1
         with:
