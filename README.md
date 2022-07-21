@@ -1,5 +1,6 @@
 # Sonic Channel
 
+[![Build](https://github.com/pleshevskiy/sonic-channel/actions/workflows/ci.yml/badge.svg)](https://github.com/pleshevskiy/sonic-channel/actions/workflows/ci.yml)
 [![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
 [![Documentation](https://docs.rs/sonic-channel/badge.svg)](https://docs.rs/sonic-channel)
 [![Crates.io](https://img.shields.io/crates/v/sonic-channel)](https://crates.io/crates/sonic-channel)
