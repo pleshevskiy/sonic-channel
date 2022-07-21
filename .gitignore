@@ -1,10 +1,6 @@
-.idea/
-.vscode/
-
 .DS_Store
 
 /target
-Cargo.lock
 
 /src/main.rs
 
