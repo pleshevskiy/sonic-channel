@@ -45,6 +45,9 @@ jobs:
         run: cargo build --verbose
 
       - uses: isbang/compose-action@v0.1
+        with:
+          compose-file: ./docker-compose.test.yml
+          down-flags: --volumes
 
       - name: Run tests
         uses: actions-rs/cargo@v1
