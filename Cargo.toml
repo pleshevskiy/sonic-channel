@@ -16,7 +16,7 @@ readme = "README.md"
 
 [dependencies]
 log = "0.4.17"
-whatlang = "0.16.0"
+whatlang = "0.16.1"
 
 [features]
 default = ["search"]

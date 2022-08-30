@@ -82,9 +82,9 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "whatlang"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2989d7e9d3cb96a76438e879144030b1be0931b944fbfed65e89e2ae536cd3b9"
+checksum = "62048dd1608d12e06c92786a1541e04fdebaaee4f7ebf2aecdc503a1b5ac46d0"
 dependencies = [
  "hashbrown",
  "once_cell",
