@@ -24,7 +24,7 @@ use crate::result::*;
 const UNINITIALIZED_MODE_MAX_BUFFER_SIZE: usize = 200;
 
 /// Channel modes supported by sonic search backend.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ChannelMode {
     /// Sonic server search channel mode.
     ///
