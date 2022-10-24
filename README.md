@@ -14,7 +14,7 @@ We recommend you start with the [documentation].
 
 **The MSRV is: 1.58.1**
 
-Add `sonic-channel = { version = "1.0" }` as a dependency in `Cargo.toml`.
+Add `sonic-channel = { version = "1.1" }` as a dependency in `Cargo.toml`.
 
 `Cargo.toml` example:
 
@@ -25,7 +25,7 @@ version = "0.1.0"
 authors = ["Me <user@rust-lang.org>"]
 
 [dependencies]
-sonic-channel = { version = "1.0", features = ["ingest"] }
+sonic-channel = { version = "1.1", features = ["ingest"] }
 ```
 
 Add `default-features = false` to dependency, if you want to exclude default
