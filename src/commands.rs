@@ -12,6 +12,8 @@ mod pop;
 mod push;
 
 #[cfg(feature = "search")]
+mod list;
+#[cfg(feature = "search")]
 mod query;
 #[cfg(feature = "search")]
 mod suggest;
@@ -29,9 +31,9 @@ pub(crate) use self::{
 pub use self::{count::CountRequest, flush::FlushRequest, pop::PopRequest, push::PushRequest};
 
 #[cfg(feature = "search")]
-pub(crate) use self::{query::QueryCommand, suggest::SuggestCommand};
+pub(crate) use self::{list::ListCommand, query::QueryCommand, suggest::SuggestCommand};
 #[cfg(feature = "search")]
-pub use self::{query::QueryRequest, suggest::SuggestRequest};
+pub use self::{list::ListRequest, query::QueryRequest, suggest::SuggestRequest};
 
 #[cfg(feature = "control")]
 pub(crate) use trigger::TriggerCommand;

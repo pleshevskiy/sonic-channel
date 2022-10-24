@@ -76,6 +76,17 @@ impl Protocol {
                 }
             }
 
+            #[rustfmt::skip]
+            Request::List { collection, bucket, limit, offset } => {
+                write!(res, "LIST {} {}", collection, bucket)?;
+                if let Some(limit) = limit {
+                    write!(res, " LIMIT({})", limit)?;
+                }
+                if let Some(offset) = offset {
+                    write!(res, " OFFSET({})", offset)?;
+                }
+            }
+
             Request::Trigger(triger_req) => match triger_req {
                 TriggerRequest::Consolidate => write!(res, "TRIGGER consolidate")?,
                 TriggerRequest::Backup(path) => {
@@ -123,6 +134,7 @@ impl Protocol {
                 let event_kind = match segments.next() {
                     Some("SUGGEST") => Ok(EventKind::Suggest),
                     Some("QUERY") => Ok(EventKind::Query),
+                    Some("LIST") => Ok(EventKind::List),
                     _ => Err(Error::WrongResponse),
                 }?;
 
@@ -202,6 +214,7 @@ pub struct StartedPayload {
 pub enum EventKind {
     Suggest,
     Query,
+    List,
 }
 
 //===========================================================================//
@@ -222,6 +235,12 @@ pub enum Request {
         bucket: String,
         word: String,
         limit: Option<usize>,
+    },
+    List {
+        collection: String,
+        bucket: String,
+        limit: Option<usize>,
+        offset: Option<usize>,
     },
     Query {
         collection: String,
