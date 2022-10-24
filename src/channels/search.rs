@@ -130,4 +130,35 @@ impl SearchChannel {
             req: SuggestRequest,
         );
     );
+
+    init_command!(
+        /// Enumerates all words in an index.
+        ///
+        /// Note: This method requires enabling the `search` feature and start
+        /// connection in Search mode.
+        ///
+        /// ```rust,no_run
+        /// # use sonic_channel::*;
+        /// # fn main() -> result::Result<()> {
+        /// let search_channel = SearchChannel::start(
+        ///     "localhost:1491",
+        ///     "SecretPassword",
+        /// )?;
+        ///
+        /// let result = search_channel.list(
+        ///     ListRequest::new(Dest::col("search"))
+        /// )?;
+        /// dbg!(result);
+        ///
+        /// let result = search_channel.list(
+        ///     ListRequest::new(Dest::col("search")).limit(2)
+        /// )?;
+        /// dbg!(result);
+        /// # Ok(())
+        /// # }
+        /// ```
+        use ListCommand for fn list(
+            req: ListRequest,
+        );
+    );
 }
