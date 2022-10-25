@@ -62,7 +62,7 @@ checksum = "18a6dbe30758c9f83eb00cbea4ac95966305f5a7772f3f42ebfc7fc7eddbd8e1"
 
 [[package]]
 name = "sonic-channel"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "log",
  "whatlang",
@@ -82,9 +82,9 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "whatlang"
-version = "0.16.1"
+version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62048dd1608d12e06c92786a1541e04fdebaaee4f7ebf2aecdc503a1b5ac46d0"
+checksum = "9c531a2dc4c462b833788be2c07eef4e621d0e9edbd55bf280cc164c1c1aa043"
 dependencies = [
  "hashbrown",
  "once_cell",
