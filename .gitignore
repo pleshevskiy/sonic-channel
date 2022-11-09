@@ -1,7 +1,12 @@
+# misc
 .DS_Store
-.direnv/
 
+# result
 /target
 
+# test bin
 /src/main.rs
 
+# direnv
+.envrc
+.direnv/
