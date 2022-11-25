@@ -20,7 +20,7 @@ fn should_list_all_words() {
     let search_channel = search_start();
     match search_channel.list(ListRequest::new(dest.clone())) {
         Ok(object_ids) => assert_eq!(object_ids, vec!["beef", "skewers", "sweet", "teriyaki"]),
-        Err(e) => unreachable!(),
+        Err(_) => unreachable!(),
     }
 
     flush_bucket(COLLECTION, bucket);

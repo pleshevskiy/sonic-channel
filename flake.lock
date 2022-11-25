@@ -34,31 +34,7 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs",
-        "sonic-server": "sonic-server"
-      }
-    },
-    "sonic-server": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1666618211,
-        "narHash": "sha256-kKeIM9dXUi8eYcvSomx8kqSqq9zmqMx4mE5wdpEZ6O8=",
-        "owner": "pleshevskiy",
-        "repo": "sonic",
-        "rev": "e83de87ebd2e29b210c8cc6e7dfed5d2f14a0d24",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pleshevskiy",
-        "repo": "sonic",
-        "type": "github"
+        "nixpkgs": "nixpkgs"
       }
     }
   },
